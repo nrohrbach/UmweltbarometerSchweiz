@@ -1,0 +1,33 @@
+name: Daily Umwelt-Barometer Scrape
+
+on:
+  schedule:
+    - cron: "0 5 * * *"   # täglich 05:00 UTC = 07:00 MEZ
+  workflow_dispatch: {}     # erlaubt manuellen Start zum Testen
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # nötig, um Commits zu pushen
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python src/main.py
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/sightings.csv
+          git diff --quiet --cached || git commit -m "Daily data: $(date -u +%Y-%m-%d)"
+          git push

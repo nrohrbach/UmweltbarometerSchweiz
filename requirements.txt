@@ -1,0 +1,6 @@
+feedparser
+anthropic
+pandas
+pyproj
+requests
+pyyaml
