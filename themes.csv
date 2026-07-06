@@ -1,0 +1,53 @@
+id,Titel,Beschreibung,Quelle
+abfall,Abfall und Kreislaufwirtschaft,"Menge der Siedlungsabfälle pro Person und Fortschritte beim Schliessen von Materialkreisläufen, Recycling und Wiederverwendung.",BAFU-Themen
+altlasten,Altlasten und belastete Standorte,"Sanierung von mit Schadstoffen belasteten Standorten (ca. 4'000 Altlasten in der Schweiz), Fristen und Fortschritt der Sanierungen.",BAFU-Themen
+biodiversitaet,Biodiversität und Artenschutz,"Zustand und Rückgang der biologischen Vielfalt, gefährdete Arten und Lebensraumtypen, Ursachen wie Flächenverlust und Zerschneidung.",BAFU-Themen
+biotechnologie,Biotechnologie und gentechnisch veränderte Organismen,"Umgang mit gentechnisch veränderten oder pathogenen Organismen und invasiven gebietsfremden Arten, Bewilligungen und Sicherheitsauflagen.",BAFU-Themen
+boden,Bodenschutz und Bodenversiegelung,"Verlust und Beeinträchtigung fruchtbarer Böden durch Versiegelung und nicht nachhaltige Nutzung, Auswirkungen auf Ökosystemleistungen.",BAFU-Themen
+chemikalien,Chemikaliensicherheit allgemein,"Regulierung und Risikobeurteilung chemischer Stoffe in Produkten des täglichen Bedarfs, internationale Chemikaliensicherheit.",BAFU-Themen
+elektrosmog,Elektrosmog und Mobilfunkstrahlung,"Belastung der Bevölkerung durch nichtionisierende Strahlung von Mobilfunknetzen, Monitoring und Grenzwerte.",BAFU-Themen
+erdbeben,Erdbebenrisiko und -vorsorge,"Erdbeben als eines der grössten Risiken der Schweiz, Massnahmenprogramme zur Vorsorge und Schadensminderung.",BAFU-Themen
+umweltgesundheit,Umwelt und Gesundheit,Zusammenhang zwischen intakter Umwelt und menschlicher Gesundheit sowie Wohlbefinden.,BAFU-Themen
+klima_allgemein,Klimapolitik und Treibhausgasreduktion,"Übergeordnete Schweizer Klimapolitik, Netto-Null-Ziel 2050, Klima- und Innovationsgesetz, CO2-Gesetz.",BAFU-Themen
+landschaft,Landschaftsschutz und -entwicklung,"Erhalt und qualitative Weiterentwicklung der Schweizer Landschaft, Druck durch Siedlungs- und Flächenverbrauch.",BAFU-Themen
+laerm,Lärmbelastung,"Verkehrslärm und dessen Auswirkungen auf Gesundheit und Lebensqualität, besonders in Städten und Agglomerationen.",BAFU-Themen
+licht,Lichtverschmutzung,"Zunahme künstlicher Lichtemissionen, Auswirkungen auf nachtaktive Tiere und menschliches Wohlbefinden.",BAFU-Themen
+luft,Luftqualität,"Belastung durch Ozon, Feinstaub und Stickstoffverbindungen trotz allgemeiner Verbesserung seit 2000.",BAFU-Themen
+naturgefahren_allgemein,Naturgefahren allgemein,"Übergreifendes Risiko durch Naturgefahren in der Schweiz (Gebirge, Gewässer), wachsendes Schadenspotenzial durch Siedlungsausdehnung.",BAFU-Themen
+stoerfallvorsorge,Störfallvorsorge,"Risiko von Störfällen im Umgang mit gefährlichen Stoffen/Organismen, Koordination zwischen Raumplanung und Sicherheitsmassnahmen.",BAFU-Themen
+wald_holz,Wald und Holznutzung,"Schutzfunktion, Gesundheit und Nutzung des Schweizer Walds; Belastung durch Trockenheit, Hitze, Stürme und Schädlinge.",BAFU-Themen
+wasser,Gewässerschutz und Wasserqualität,"Zustand von Bächen und Flüssen, Wasserqualität, strukturelle Defizite trotz grundsätzlicher Erfolge im Gewässerschutz.",BAFU-Themen
+wirtschaft_konsum,Ressourcenverbrauch und nachhaltiger Konsum,"Umweltbelastung durch Produktions- und Konsummuster, insbesondere Ernährung, Wohnen und Mobilität; planetare Belastbarkeitsgrenzen.",BAFU-Themen
+risk_hitze_gesundheit,Beeinträchtigung der Gesundheit durch Hitze,"Zunehmende Hitzeperioden belasten Wohlbefinden und Gesundheit, v.a. ältere und vorbelastete Menschen; das laut Bericht grösste Einzelrisiko.",Klima-Risikoanalyse
+risk_hitze_leistung,Einschränkung der Leistungsfähigkeit durch Hitze,"Hitze reduziert die Arbeitsproduktivität, besonders bei körperlich aktiven Berufen in Bau- und Landwirtschaft.",Klima-Risikoanalyse
+risk_hitze_tiergesundheit,Beeinträchtigung der Tiergesundheit durch Hitze,"Nutztiere wie Rinder, Schweine und Geflügel leiden unter Hitzestress, mit Folgen für Ertrag und Tierwohl.",Klima-Risikoanalyse
+risk_hitze_landwirtschaft,Ertragseinbussen in der Landwirtschaft durch Hitze,"Hitzestress beeinträchtigt Wachstum und Qualität landwirtschaftlicher Kulturen, z.B. bei Kartoffeln.",Klima-Risikoanalyse
+risk_hitze_wald,Beeinträchtigung von Waldleistungen durch Hitze,Hitzestress schwächt Bäume und reduziert sowohl Holznutzungspotenzial als auch Schutzfunktion des Waldes.,Klima-Risikoanalyse
+risk_hitze_verkehr,Beeinträchtigung der Verkehrsinfrastruktur durch Hitze,"Hitze verformt Schienen, Strassen und Landebahnen, was zu Verspätungen und Mehrkosten führt.",Klima-Risikoanalyse
+risk_hitze_strom,Beeinträchtigung der Stromversorgung durch Hitze,Mit Flusswasser gekühlte Kraftwerke müssen bei hohen Wassertemperaturen ihre Leistung drosseln.,Klima-Risikoanalyse
+risk_trockenheit_landwirtschaft,Ertragseinbussen in der Landwirtschaft durch Trockenheit,"Regenarme Sommer verringern Ernteerträge, besonders bei wasserintensiven Kulturen wie Kartoffeln oder Mais.",Klima-Risikoanalyse
+risk_trockenheit_wald,Beeinträchtigung von Waldleistungen durch Trockenheit,"Trockenheit schwächt Bäume und erhöht die Anfälligkeit für Schädlinge, reduziert Holznutzung und Schutzfunktion.",Klima-Risikoanalyse
+risk_waldbrand,Schäden durch Waldbrände,"Anhaltende Trockenheit erhöht Waldbrandgefahr und -intensität, insbesondere im Tessin und Wallis.",Klima-Risikoanalyse
+risk_speicherseen,Wasserknappheit in Speicherseen,"Trockene Sommer führen zu tieferen Füllständen der Stauseen, mit Folgen für die Winterstromproduktion.",Klima-Risikoanalyse
+risk_rheinschifffahrt,Einschränkung der Rheinschifffahrt,"Niedrigwasser limitiert Beladung und Verkehr auf dem Rhein, wichtig für Schweizer Importe/Exporte.",Klima-Risikoanalyse
+risk_wasserversorgung,Beeinträchtigung der Wasserversorgung,Niedrigwasser kann lokal die öffentliche Trink- und Grundwasserversorgung einschränken.,Klima-Risikoanalyse
+risk_hochwasser_sach,Sachschäden durch grossräumige Hochwasser,Langanhaltende Niederschläge verursachen teure Überschwemmungen entlang von Gewässern - das teuerste Extremereignis der Schweiz.,Klima-Risikoanalyse
+risk_hochwasser_betrieb,Betriebsunterbrüche durch grossräumige Hochwasser,Hochwasser führt zu Verkehrs- und Betriebsunterbrüchen mit indirekten wirtschaftlichen Kosten.,Klima-Risikoanalyse
+risk_oberflaechenabfluss_sach,Sachschäden durch Oberflächenabfluss und lokale Überschwemmungen,Starkregen überflutet Strassen und Gebäude auch ausserhalb klassischer Hochwasser-Gefahrengebiete.,Klima-Risikoanalyse
+risk_oberflaechenabfluss_betrieb,Betriebsunterbrüche durch Oberflächenabfluss,Eindringendes Wasser in Gebäude führt zu länger andauernden Nutzungseinschränkungen von Betrieben.,Klima-Risikoanalyse
+risk_massenbewegung_personen,Personenschäden durch gravitative Massenbewegungen,"Rutschungen, Steinschlag und Murgänge gefährden Menschen, vor allem im alpinen Raum.",Klima-Risikoanalyse
+risk_massenbewegung_sach,Sachschäden durch gravitative Massenbewegungen,"Rutschungen und Murgänge beschädigen Siedlungen, Verkehrswege und weitere Infrastruktur.",Klima-Risikoanalyse
+risk_massenbewegung_betrieb,Betriebsunterbrüche durch gravitative Massenbewegungen,Sperrungen von Verkehrsachsen nach Rutschungen oder Murgängen verursachen hohe indirekte Kosten.,Klima-Risikoanalyse
+risk_hagel_sach,Sachschäden durch Hagel und Stürme,"Hagel- und Sturmereignisse beschädigen Gebäudehüllen, Fahrzeuge, Gewächshäuser und Solaranlagen.",Klima-Risikoanalyse
+risk_hagel_betrieb,Betriebsunterbrüche durch Hagel und Stürme,Beschädigte Gebäude können nach Hagel- oder Sturmschäden längerfristig nicht genutzt werden.,Klima-Risikoanalyse
+risk_wintertourismus,Einbussen im Wintertourismus durch schneearme Winter,Weniger Schnee in tiefen und mittleren Lagen beeinträchtigt den Wintersporttourismus in den Bergen.,Klima-Risikoanalyse
+risk_oekosystemleistungen,Beeinträchtigung von Ökosystemen und deren Leistungen,"Der Klimawandel beeinträchtigt Ökosystemleistungen wie sauberes Wasser, fruchtbare Böden, Kohlenstoffspeicherung und Bestäubung.",Klima-Risikoanalyse
+risk_schadorganismen,Vermehrt auftretende Schadorganismen,"Wärmeliebende, teils gebietsfremde Schadorganismen breiten sich aus und beeinträchtigen Gesundheit, Land- und Waldwirtschaft.",Klima-Risikoanalyse
+risk_landschaftsbild,Verändertes Landschaftsbild,Der Klimawandel verändert das Erscheinungsbild und wichtige Identifikationsmerkmale der Schweizer Landschaft.,Klima-Risikoanalyse
+strategie_lebensraeume,Ökologisch wertvolle Lebensräume fördern und vernetzen,"Aufbau eines schweizweiten Netzwerks ökologisch wertvoller Flächen als Basis für reichhaltige, vernetzte Biodiversität.",BAFU-Strategie
+strategie_klimaanpassung,Anpassungsfähigkeit an den Klimawandel steigern,"Stärkung der Anpassungsfähigkeit von Gesellschaft, Wirtschaft und Umwelt an die Folgen des Klimawandels gemäss Pariser Abkommen.",BAFU-Strategie
+strategie_kreislaufwirtschaft,"Nachhaltige Herstellung, Wiederverwendung und Recycling stärken","Förderung von Kreislaufwirtschaft und Ökodesign, um Materialkreisläufe zu schliessen und Ressourcen zu schonen.",BAFU-Strategie
+strategie_lebensmittelverluste,Lebensmittelverluste vermindern,"Ziel, vermeidbare Lebensmittelverluste (Food Waste) entlang der gesamten Wertschöpfungskette bis 2030 zu halbieren.",BAFU-Strategie
+strategie_plastikkonvention,Verhandlungen für eine Plastikkonvention vorantreiben,Einsatz der Schweiz für eine internationale Konvention gegen Plastikverschmutzung entlang des gesamten Lebenszyklus.,BAFU-Strategie
+strategie_chemikalien,"Belastung und Risiken von Chemikalien reduzieren (PFAS, PSM, Biozide)","Einschränkung besonders risikoreicher Chemikalien wie PFAS, Pflanzenschutzmitteln und Bioziden zum Schutz von Umwelt und Gesundheit.",BAFU-Strategie
+strategie_datenmanagement,Amtsübergreifendes Datenmanagement aufbauen,"Aufbau eines ganzheitlichen Datenmanagements für Umweltdaten gemäss EMBAG, um Erkenntnisse besser nutzbar zu machen.",BAFU-Strategie
