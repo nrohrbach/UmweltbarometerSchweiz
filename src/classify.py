@@ -11,7 +11,7 @@ from groq import Groq
 logger = logging.getLogger(__name__)
 
 DEFAULT_THEMES_PATH = Path(__file__).resolve().parent.parent / "config" / "themes.csv"
-DEFAULT_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+DEFAULT_MODEL = os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant")
 
 VALID_CONFIDENCE = {"high", "medium", "low"}
 
