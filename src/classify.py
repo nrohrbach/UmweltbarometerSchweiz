@@ -18,6 +18,13 @@ VALID_CONFIDENCE = {"high", "medium", "low"}
 
 BATCH_PROMPT_TEMPLATE = """Du bekommst eine Liste von Artikeln (jeweils mit ID, Titel und Zusammenfassung) sowie eine Liste von Umweltthemen.
 Ordne jeden Artikel den passenden Themen zu (0, 1 oder mehrere möglich). Erfinde keine Themen, die nicht in der Liste stehen. Falls kein Thema passt, gib eine leere Liste zurück.
+WICHTIG: Sei restriktiv bei der Zuordnung. Klassifiziere einen Artikel NUR dann zu einem Thema, 
+wenn das Thema der HAUPTINHALT oder ein zentraler Aspekt des Artikels ist. 
+Reine Bauprojekte oder Infrastrukturvorhaben (wie Strassen- oder Bahnausbauten) sollen NICHT 
+automatisch bei 'klima_allgemein' oder 'wirtschaft_konsum' landen, es sei denn, der Artikel 
+thematisiert explizit eine ökologische Debatte, CO2-Bilanzen oder konkrete Umweltauflagen.
+
+Falls kein Thema wirklich substanziell passt, gib eine leere Liste zurück.
 
 Extrahiere zusätzlich, falls im Text erwähnt, einen konkreten Schweizer Ortsnamen (Gemeinde, Region, Fluss, Berg) als reinen Text — erfinde keinen Ort, falls keiner erwähnt wird.
 
