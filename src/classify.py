@@ -1,4 +1,4 @@
-"""Komponente 3: KI-Klassifikation der Artikel gegen die Themenliste (Anthropic API)."""
+"""Komponente 3: KI-Klassifikation der Artikel gegen die Themenliste (Groq API)."""
 
 import csv
 import json
@@ -53,7 +53,7 @@ def _valid_theme_ids(themes_path: Path = DEFAULT_THEMES_PATH) -> set[str]:
 
 def classify_article(
     article: dict,
-    client: anthropic.Anthropic,
+    client: Groq,
     themes_text: str,
     valid_theme_ids: set[str],
     model: str = DEFAULT_MODEL,
@@ -66,14 +66,16 @@ def classify_article(
     )
 
     try:
-        response = client.messages.create(
+        response = client.chat.completions.create(
             model=model,
-            max_tokens=1024,
             messages=[{"role": "user", "content": prompt}],
+            # Erzwingt die Ausgabe eines validen JSON-Objekts durch Groq
+            response_format={"type": "json_object"},
+            temperature=0.1,  # Niedrige Temperatur für deterministischere Ergebnisse
         )
-        raw_text = response.content[0].text.strip()
+        raw_text = response.choices[0].message.content.strip()
     except Exception as exc:
-        logger.error("Anthropic API-Fehler für '%s': %s", article.get("title"), exc)
+        logger.error("Groq API-Fehler für '%s': %s", article.get("title"), exc)
         return None
 
     try:
@@ -106,7 +108,8 @@ def classify_articles(articles: list[dict], themes_path: Path = DEFAULT_THEMES_P
 
     Artikel, bei denen die Klassifikation fehlschlägt, werden übersprungen.
     """
-    client = anthropic.Anthropic()
+    # Liest automatisch os.environ.get("GROQ_API_KEY")
+    client = Groq()
     themes_text = load_themes_as_text(themes_path)
     valid_theme_ids = _valid_theme_ids(themes_path)
 
