@@ -1,5 +1,5 @@
 feedparser
-anthropic
+groq
 pandas
 pyproj
 requests
