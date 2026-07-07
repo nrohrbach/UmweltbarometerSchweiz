@@ -6,12 +6,12 @@ import logging
 import os
 from pathlib import Path
 
-import anthropic
+from groq import Groq
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_THEMES_PATH = Path(__file__).resolve().parent.parent / "config" / "themes.csv"
-DEFAULT_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+DEFAULT_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 VALID_CONFIDENCE = {"high", "medium", "low"}
 
