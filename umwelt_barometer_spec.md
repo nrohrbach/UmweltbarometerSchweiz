@@ -37,8 +37,8 @@ GitHub Actions (täglicher Cron-Trigger)
 └─────────┬───────────┘  (spart spätere API-Kosten, keine Pflicht aber empfohlen)
           ▼
 ┌─────────────────────┐
-│ 3. KI-Klassifikation │  Claude API: ordnet Artikel den Themen aus themes.csv zu,
-│    (Anthropic API)   │  extrahiert zusätzlich erwähnte Ortsnamen als Text
+│ 3. KI-Klassifikation │  Groq API (llama-3.3-70b-versatile): ordnet Artikel den Themen aus
+│    (Groq, gratis)    │  themes.csv zu, extrahiert zusätzlich erwähnte Ortsnamen
 └─────────┬───────────┘
           ▼
 ┌─────────────────────┐
@@ -171,32 +171,84 @@ fremdsprachige Umweltartikel u.U. fälschlich raus, bevor die KI sie überhaupt 
 - **Zweck:** API-Kosten sparen — die meisten Artikel (Sport, Politik, Unterhaltung) haben
   nichts mit Umwelt zu tun und müssen gar nicht erst an die KI geschickt werden
 
-### 5.3 `classify.py` — KI-Klassifikation
+### 5.3 `classify.py` — KI-Klassifikation (via Groq API)
 
-**Ein Anthropic-API-Call pro Artikel** (nicht pro Thema — die ganze Themenliste geht als
-Kontext mit).
+**Warum Groq statt Anthropic:** Groq bietet einen dauerhaft kostenlosen Tarif ohne Kreditkarte
+und ohne die geografische Einschränkung, die Googles Gemini-API für Schweizer Nutzer hat
+(Googles Nutzungsbedingungen erlauben der Schweiz nur den kostenpflichtigen Tarif). Groq läuft
+ausschliesslich offene Modelle (Llama, Mixtral, Qwen) über eine eigene, sehr schnelle Hardware
+(LPU-Chips) — für Klassifikation/Extraktion völlig ausreichend, auch ohne Claude/Gemini/GPT.
 
-**Prompt-Struktur (sinngemäss):**
+**Empfohlenes Modell:** `llama-3.3-70b-versatile` — zuverlässig für Klassifikation und
+Extraktion, unterstützt strukturierte JSON-Antworten.
+
+**API-Zugriff:** Groqs API ist OpenAI-kompatibel — verwendet werden kann entweder das
+offizielle `groq`-Python-Paket oder das `openai`-Paket mit umgebogener `base_url`
+(`https://api.groq.com/openai/v1`).
+
+**Batch-Verarbeitung statt Einzelaufrufe:** Statt eines API-Calls pro Artikel werden mehrere
+Artikel gleichzeitig in einer Anfrage klassifiziert (empfohlen: **10-15 Artikel pro Batch**).
+Die Themenliste muss dann nur **einmal pro Batch** statt einmal pro Artikel mitgeschickt werden
+— das spart bei typischen Tagesmengen 5-10x an Tokens und reduziert gleichzeitig die Anzahl
+Anfragen, was auch das 1'000-Anfragen/Tag-Limit schont.
+
+**Praktische Grenze für die Batch-Grösse:** Themenliste (~1'800 Tokens) + Batch-Artikel
+(~100 Tokens/Artikel) muss unter dem 6'000-Tokens/Minute-Limit bleiben. Bei 10 Artikeln/Batch
+sind das ca. 2'800 Tokens pro Anfrage — bequem im Limit, mit Reserve für die Antwort. Zwischen
+den Batches trotzdem eine kurze Pause einbauen (z.B. `time.sleep(5)`).
+
+**Prompt-Struktur für Batch-Verarbeitung (sinngemäss):**
 ```
-Du bekommst einen Artikel-Titel und eine kurze Zusammenfassung sowie eine Liste von
-Umweltthemen. Ordne den Artikel den passenden Themen zu (0, 1 oder mehrere möglich).
-Erfinde keine Themen, die nicht in der Liste stehen. Falls kein Thema passt, gib eine
-leere Liste zurück.
+Du bekommst eine Liste von Artikeln (Titel + Zusammenfassung, je mit einer ID) sowie eine
+Liste von Umweltthemen. Ordne JEDEN Artikel einzeln den passenden Themen zu (0, 1 oder
+mehrere möglich). Erfinde keine Themen, die nicht in der Liste stehen. Falls bei einem
+Artikel kein Thema passt, gib für diesen Artikel eine leere Themenliste zurück.
 
-Extrahiere zusätzlich, falls im Text erwähnt, einen konkreten Schweizer Ortsnamen
-(Gemeinde, Region, Fluss, Berg) als reinen Text — erfinde keinen Ort, falls keiner
-erwähnt wird.
+Wichtig: Nur Artikel berücksichtigen, die sich auf die Schweiz beziehen (Ereignis, Ort oder
+Auswirkung in der Schweiz). Falls sich ein Artikel auf ein rein ausländisches Ereignis
+bezieht (z.B. Naturkatastrophe im Ausland, auch wenn Schweizer Personen/Organisationen
+involviert sind), gib für diesen Artikel eine leere Themenliste zurück — auch wenn das
+Thema inhaltlich passen würde.
+
+Extrahiere zusätzlich pro Artikel, falls im Text erwähnt, einen konkreten Schweizer
+Ortsnamen (Gemeinde, Region, Fluss, Berg) als reinen Text — erfinde keinen Ort, falls
+keiner erwähnt wird.
 
 Themenliste:
 {themes_csv_als_text}
 
 Artikel:
-Titel: {title}
-Zusammenfassung: {summary}
+[
+  {"id": "a1", "title": "...", "summary": "..."},
+  {"id": "a2", "title": "...", "summary": "..."},
+  ...
+]
 
-Antworte NUR als JSON in diesem Format:
-{"theme_ids": ["..."], "place_name": "..." oder null, "confidence": "high"|"medium"|"low"}
+Antworte NUR als JSON-Array in diesem Format, ein Eintrag pro Artikel-ID, in derselben
+Reihenfolge wie die Eingabe:
+[
+  {"id": "a1", "theme_ids": ["..."], "place_name": "..." oder null, "confidence": "high"|"medium"|"low"},
+  {"id": "a2", "theme_ids": [], "place_name": null, "confidence": "low"},
+  ...
+]
 ```
+
+**Wichtig beim Parsen der Antwort:** Immer über die `id` matchen, nicht über die Position im
+Array — falls das Modell einen Artikel auslässt oder die Reihenfolge nicht exakt einhält, geht
+sonst die Zuordnung durcheinander. Fehlt eine ID in der Antwort komplett, diesen Artikel als
+"kein Treffer" behandeln und loggen, nicht raten.
+
+**Fehlerbehandlung:** Falls das JSON-Array nicht sauber geparst werden kann, den ganzen Batch
+in zwei kleinere Batches aufteilen und erneut versuchen (einfacher "Divide and Conquer"-Ansatz),
+statt den ganzen Tageslauf abzubrechen.
+
+**Praktisch bestätigt durch einen Testlauf mit echten RSS-Daten:** Artikel wie "Erdbeben Venezuela
+– Schweizer Rettungskräfte" oder "Waldbrand-Flucht Südfrankreich" würden ohne den
+Schweiz-Filter fälschlich als Schweizer Umweltereignis gespeichert, obwohl nur Personen/
+Organisationen involviert sind, das Ereignis selbst aber im Ausland stattfindet. Die
+Entscheidung: **Solche Artikel werden komplett verworfen** (leere Themenliste), nicht nur
+ohne Bounding Box gespeichert — einfacher und sauberer als eine nachgelagerte Länderprüfung
+in Komponente 4.
 
 **Wichtige Prinzipien (siehe Projekt-Historie):**
 - Die KI klassifiziert nur gegen die vorgegebene Liste, erfindet keine neuen Themen
@@ -274,7 +326,7 @@ jobs:
 
       - name: Run pipeline
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: python src/main.py
 
       - name: Commit results
@@ -287,20 +339,22 @@ jobs:
 ```
 
 **Secret einrichten:** Im GitHub-Repo unter Settings → Secrets and variables → Actions →
-`ANTHROPIC_API_KEY` hinterlegen. Nie den Key im Code oder in `.env` committen.
+`GROQ_API_KEY` hinterlegen (Key erstellst du kostenlos auf `console.groq.com`, kein
+Zahlungsmittel nötig). Nie den Key im Code oder in `.env` committen.
 
 ---
 
 ## 6. Implementierungsplan (Reihenfolge für Claude Code)
 
 1. **Repo-Grundgerüst anlegen** — Ordnerstruktur wie oben, `requirements.txt`
-   (`feedparser`, `anthropic`, `pandas`, `pyproj`, `requests`, `pyyaml`)
+   (`feedparser`, `groq`, `pandas`, `pyproj`, `requests`, `pyyaml`)
 2. **`themes.csv` mit 10-15 Start-Themen befüllen** (Platzhalter, später erweiterbar)
 3. **`fetch_rss.py` implementieren und lokal testen** — Feeds aus `feeds.yaml` lesen,
    Artikel-Liste ausgeben, Anzahl pro Feed loggen
 4. **`prefilter.py` implementieren** — auf Testartikeln prüfen, dass sinnvoll gefiltert wird
-5. **`classify.py` implementieren** — zuerst mit 2-3 Testartikeln von Hand prüfen, ob die
-   JSON-Antwort korrekt geparst wird und Themen korrekt zugeordnet werden
+5. **`classify.py` implementieren** — zuerst mit einem kleinen Batch (3-5 Testartikel von
+   Hand zusammengestellt) prüfen, ob das JSON-Array korrekt geparst wird und Themen sowie
+   IDs korrekt zugeordnet werden, bevor auf volle Batch-Grösse (10-15) hochgegangen wird
 6. **`geocode.py` implementieren** — mit bekannten Testorten (z.B. "Bern", "Emmental")
    verifizieren, dass plausible Bounding Boxes zurückkommen
 7. **`storage.py` implementieren** — Dedupe-Logik testen (Skript zweimal laufen lassen,
@@ -320,9 +374,8 @@ jobs:
   gespeichert — bei einem BAFU-Projekt eher privates Repo sinnvoll)
 - **Anzahl Start-Themen**: Vorschlag 10-15, endgültige Liste musst du inhaltlich festlegen
   (idealerweise in Anlehnung an die BAFU-Klima-Risikoanalyse, siehe Abschnitt 4.1)
-- **Claude-Modell für Klassifikation**: für diese Aufgabe (Klassifikation + Extraktion)
-  reicht ein kleineres/günstigeres Modell wie Claude Haiku — die volle Kapazität eines
-  grösseren Modells ist hierfür nicht nötig
+- ~~Claude-Modell für Klassifikation~~ — erledigt: Groq mit `llama-3.3-70b-versatile`
+  gewählt (siehe Abschnitt 5.3), dauerhaft kostenlos ohne Schweiz-Einschränkung
 
 ---
 

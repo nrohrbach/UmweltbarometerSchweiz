@@ -1,16 +1,16 @@
 # UmweltbarometerSchweiz
 
 Ein täglich automatisch laufendes System, das Schweizer News-RSS-Feeds abfragt, Artikel mittels
-KI-Klassifikation (Anthropic API) rund 50 vordefinierten Umweltthemen zuordnet und die Ergebnisse
-(Thema, Datum, Quelle, ggf. geografische Bounding Box) versioniert in `data/sightings.csv`
-speichert.
+KI-Klassifikation (Groq API, `llama-3.3-70b-versatile`, batchweise) rund 50 vordefinierten
+Umweltthemen zuordnet und die Ergebnisse (Thema, Datum, Quelle, ggf. geografische Bounding Box)
+versioniert in `data/sightings.csv` speichert.
 
 Vollständige technische Spezifikation: [`umwelt_barometer_spec.md`](umwelt_barometer_spec.md).
 
 ## Architektur
 
 ```
-RSS Fetcher → Keyword-Vorfilter → KI-Klassifikation (Anthropic) → Geocoding (geo.admin.ch) → Storage (Git)
+RSS Fetcher → Keyword-Vorfilter → KI-Klassifikation (Groq, Batch) → Geocoding (geo.admin.ch) → Storage (Git)
 ```
 
 Kein Ziel von v1: Score-Berechnung, Normalisierung, Dashboard/Visualisierung, Abgleich mit
@@ -20,13 +20,13 @@ BAFU-Risikoanalyse.
 
 ```bash
 pip install -r requirements.txt
-cp .env.example .env   # ANTHROPIC_API_KEY eintragen, .env NIE committen
+cp .env.example .env   # GROQ_API_KEY eintragen (kostenlos via console.groq.com), .env NIE committen
 ```
 
 ## Lokal ausführen
 
 ```bash
-export ANTHROPIC_API_KEY=...   # oder via .env + python-dotenv
+export GROQ_API_KEY=...   # oder via .env + python-dotenv
 python src/main.py
 ```
 
@@ -51,4 +51,4 @@ python src/main.py
 
 Der Workflow läuft täglich um 05:00 UTC (07:00 MEZ) und kann zusätzlich manuell über
 `workflow_dispatch` gestartet werden. Dafür muss im Repo unter Settings → Secrets and
-variables → Actions das Secret `ANTHROPIC_API_KEY` hinterlegt werden.
+variables → Actions das Secret `GROQ_API_KEY` hinterlegt werden.
