@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Umwelt-Aufmerksamkeitsbarometer Schweiz</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <!-- Offizielle Oblique CSS-Distribution (vendored, MIT, @oblique/oblique v15.4.0) -->
+  <link rel="stylesheet" href="vendor/oblique/oblique-core.css" />
+  <link rel="stylesheet" href="vendor/oblique/oblique-components.css" />
+  <link rel="stylesheet" href="vendor/oblique/oblique-alert.css" />
+  <style>
+    /* Eigene CSS Custom Properties, Werte 1:1 aus den offiziellen
+       Oblique Design Tokens (@oblique/oblique/styles/scss/core/_variables.scss
+       und _palette.scss, Version 15.4.0). */
+    :root {
+      --ob-color-primary:       #46596B; /* $ob-primary  (secondary-500) */
+      --ob-color-primary-dark:  #263645; /* secondary-700 */
+      --ob-color-primary-light: #F0F4F7; /* secondary-50  ($ob-extra-light) */
+      --ob-color-accent:        #E53940; /* $ob-accent (red-500) */
+      --ob-color-black:         #1C2834; /* $ob-default (secondary-800) */
+      --ob-color-gray-dark:     #46596B; /* secondary-500 */
+      --ob-color-gray:          #828E9A; /* secondary-300 */
+      --ob-color-gray-light:    #ACB4BD; /* secondary-200 */
+      --ob-color-bg:            #F0F4F7; /* secondary-50 ($ob-extra-light) */
+      --ob-color-white:         #FFFFFF;
+      --ob-font-family:         'Noto Sans', Arial, system-ui, -apple-system, BlinkMacSystemFont, sans-serif; /* $ob-font */
+      --ob-space-xs:  4px;   /* $ob-spacing-xs */
+      --ob-space-sm:  8px;   /* $ob-spacing-sm */
+      --ob-space-md:  12px;  /* $ob-spacing-md */
+      --ob-space-lg:  24px;  /* $ob-spacing-lg */
+      --ob-space-xl:  32px;  /* $ob-spacing-xl */
+      --ob-shadow:    0 2px 4px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.08); /* ob-shadow-default */
+      --ob-radius:    4px;   /* $ob-border-radius-base */
+      --ob-border:    1px solid var(--ob-color-gray-light);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--ob-font-family);
+      background: var(--ob-color-bg);
+      color: var(--ob-color-black);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── HEADER ─────────────────────────────────────────────── */
+    header {
+      background: var(--ob-color-white);
+      color: var(--ob-color-black);
+      padding: var(--ob-space-sm) var(--ob-space-xl);
+      display: flex;
+      align-items: center;
+      gap: var(--ob-space-md);
+      border-bottom: 1px solid #DFE4E9; /* secondary-100 */
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header-logo img { height: 38px; width: auto; display: block; }
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 300;
+      letter-spacing: 0.01em;
+      padding-left: var(--ob-space-sm);
+      border-left: 1px solid #DFE4E9;
+    }
+    header p  { font-size: 0.82rem; color: var(--ob-color-gray-dark); margin-top: 2px; }
+
+    /* ─── MAIN ────────────────────────────────────────────────── */
+    main {
+      flex: 1;
+      padding: var(--ob-space-xl);
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ─── KPI GRID ────────────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--ob-space-md);
+      margin-bottom: var(--ob-space-xl);
+    }
+    .kpi-card {
+      background: var(--ob-color-white);
+      border: var(--ob-border);
+      border-radius: var(--ob-radius);
+      padding: var(--ob-space-lg);
+      box-shadow: var(--ob-shadow);
+    }
+    .kpi-card .kpi-label {
+      font-size: 0.78rem;
+      color: var(--ob-color-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: var(--ob-space-sm);
+    }
+    .kpi-card .kpi-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--ob-color-primary);
+      line-height: 1;
+    }
+
+    /* ─── TAB NAVIGATION ──────────────────────────────────────── */
+    nav.tabs {
+      display: flex;
+      gap: var(--ob-space-xs);
+      border-bottom: 2px solid var(--ob-color-gray-light);
+      margin-bottom: var(--ob-space-xl);
+    }
+    .tab-item {
+      padding: 10px var(--ob-space-lg);
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--ob-color-gray-dark);
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .tab-item:hover { background: var(--ob-color-primary-light); color: var(--ob-color-primary-dark); }
+    .tab-item.active {
+      border-bottom-color: var(--ob-color-primary);
+      color: var(--ob-color-primary-dark);
+    }
+
+    /* ─── PAGE ────────────────────────────────────────────────── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .page-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--ob-color-primary-dark);
+      margin-bottom: 2px;
+    }
+    .page-subtitle {
+      font-size: 0.88rem;
+      color: var(--ob-color-gray);
+      margin-bottom: var(--ob-space-lg);
+    }
+
+    /* ─── CHART CARDS ─────────────────────────────────────────── */
+    .chart-card {
+      background: var(--ob-color-white);
+      border: var(--ob-border);
+      border-radius: var(--ob-radius);
+      box-shadow: var(--ob-shadow);
+      padding: var(--ob-space-lg);
+    }
+    .chart-card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ob-color-primary-dark);
+      margin-bottom: var(--ob-space-md);
+      padding-bottom: var(--ob-space-sm);
+      border-bottom: var(--ob-border);
+    }
+    .chart-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--ob-space-lg);
+    }
+    @media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
+
+    /* ─── LOADING ─────────────────────────────────────────────── */
+    #loading {
+      position: fixed; inset: 0;
+      background: rgba(255,255,255,0.9);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: var(--ob-space-md);
+      z-index: 100;
+    }
+    .spinner {
+      width: 42px; height: 42px;
+      border: 4px solid var(--ob-color-gray-light);
+      border-top-color: var(--ob-color-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p { color: var(--ob-color-gray-dark); font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Daten werden geladen…</p>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="header-logo">
+    <img src="vendor/oblique/images/logo.svg" alt="Schweizerische Eidgenossenschaft">
+  </div>
+  <div>
+    <h1>Umwelt-Aufmerksamkeitsbarometer Schweiz</h1>
+    <p>Medienaufmerksamkeit für Umweltthemen in Schweizer News-Feeds</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPI-Zeile -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Zeitraum</div>
+      <div class="kpi-value" id="kpi-days">–</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Einträge gesamt</div>
+      <div class="kpi-value" id="kpi-total">–</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Quellen</div>
+      <div class="kpi-value" id="kpi-sources">–</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Themen mit Treffern</div>
+      <div class="kpi-value" id="kpi-themes">–</div>
+    </div>
+  </div>
+
+  <!-- Tab-Navigation -->
+  <nav class="tabs">
+    <button class="tab-item active" data-page="bafu">BAFU-Themen</button>
+    <button class="tab-item" data-page="risk">Klimarisiken</button>
+    <button class="tab-item" data-page="strategie">Strategie 2030</button>
+  </nav>
+
+  <!-- ── BAFU-THEMEN ─────────────────────────────────────────── -->
+  <div id="page-bafu" class="page active">
+    <div class="page-title">BAFU-Themen</div>
+    <div class="page-subtitle">Medienaufmerksamkeit für die 19 übergeordneten BAFU-Umweltthemen</div>
+    <div class="chart-row">
+      <div class="chart-card">
+        <h2>Medienaufmerksamkeit über Zeit — Top 5 BAFU-Themen</h2>
+        <div id="chart-bafu-line"></div>
+      </div>
+      <div class="chart-card">
+        <h2>Top 10 — Gesamteinträge BAFU-Themen</h2>
+        <div id="chart-bafu-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KLIMARISIKEN ──────────────────────────────────────────── -->
+  <div id="page-risk" class="page">
+    <div class="page-title">Klimarisiken</div>
+    <div class="page-subtitle">Medienaufmerksamkeit für die Risikogruppen der BAFU-Klima-Risikoanalyse</div>
+    <div class="chart-row">
+      <div class="chart-card">
+        <h2>Medienaufmerksamkeit über Zeit — Top 5 Klimarisiken</h2>
+        <div id="chart-risk-line"></div>
+      </div>
+      <div class="chart-card">
+        <h2>Top 10 — Gesamteinträge Klimarisiken</h2>
+        <div id="chart-risk-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STRATEGIE 2030 ────────────────────────────────────────── -->
+  <div id="page-strategie" class="page">
+    <div class="page-title">Strategie 2030</div>
+    <div class="page-subtitle">Medienaufmerksamkeit für die BAFU-Strategieziele 2030</div>
+    <div class="chart-row">
+      <div class="chart-card">
+        <h2>Medienaufmerksamkeit über Zeit — Top 5 Strategie 2030</h2>
+        <div id="chart-strategie-line"></div>
+      </div>
+      <div class="chart-card">
+        <h2>Top 10 — Gesamteinträge Strategie 2030</h2>
+        <div id="chart-strategie-bar"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// KONFIGURATION
+// ─────────────────────────────────────────────────────────────────────────────
+const GITHUB_USER = 'nrohrbach';
+const GITHUB_REPO = 'UmweltbarometerSchweiz';
+const GITHUB_BRANCH = 'main';
+const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}`;
+
+const COLORS = ['#2a78d6','#008300','#e87ba4','#eda100','#1baf7a',
+                '#eb6834','#4a3aa7','#e34948'];
+
+const BAFU_IDS = ['abfall','altlasten','biodiversitaet','biotechnologie','boden',
+  'chemikalien','elektrosmog','erdbeben','umweltgesundheit','klima_allgemein',
+  'landschaft','laerm','licht','luft','naturgefahren_allgemein','stoerfallvorsorge',
+  'wald_holz','wasser','wirtschaft_konsum'];
+
+const RISK_IDS = ['risk_hitze_gesundheit','risk_hitze_leistung','risk_hitze_tiergesundheit',
+  'risk_hitze_landwirtschaft','risk_hitze_wald','risk_hitze_verkehr','risk_hitze_strom',
+  'risk_trockenheit_landwirtschaft','risk_trockenheit_wald','risk_waldbrand',
+  'risk_speicherseen','risk_rheinschifffahrt','risk_wasserversorgung',
+  'risk_hochwasser_sach','risk_hochwasser_betrieb','risk_oberflaechenabfluss_sach',
+  'risk_oberflaechenabfluss_betrieb','risk_massenbewegung_personen',
+  'risk_massenbewegung_sach','risk_massenbewegung_betrieb','risk_hagel_sach',
+  'risk_hagel_betrieb','risk_wintertourismus','risk_oekosystemleistungen',
+  'risk_schadorganismen','risk_landschaftsbild'];
+
+const STRAT_IDS = ['strategie_lebensraeume','strategie_klimaanpassung',
+  'strategie_kreislaufwirtschaft','strategie_lebensmittelverluste',
+  'strategie_plastikkonvention','strategie_chemikalien','strategie_datenmanagement'];
+
+function riskGroup(theme_id) {
+  return theme_id.split('_')[1];
+  // 'risk_hitze_gesundheit' → 'hitze'
+  // 'risk_hochwasser_sach'  → 'hochwasser'
+  // 'risk_waldbrand'        → 'waldbrand'  (nur 2 Teile, also [1] = 'waldbrand')
+}
+
+const RISK_GROUP_LABELS = {
+  hitze: 'Hitze', trockenheit: 'Trockenheit', waldbrand: 'Waldbrand',
+  speicherseen: 'Speicherseen', rheinschifffahrt: 'Rheinschifffahrt',
+  wasserversorgung: 'Wasserversorgung', hochwasser: 'Hochwasser',
+  oberflaechenabfluss: 'Oberflächenabfluss', massenbewegung: 'Massenbewegung',
+  hagel: 'Hagel/Sturm', wintertourismus: 'Wintertourismus',
+  oekosystemleistungen: 'Ökosystem', schadorganismen: 'Schadorganismen',
+  landschaftsbild: 'Landschaftsbild'
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DATENLADEN
+// ─────────────────────────────────────────────────────────────────────────────
+let sightings = [], themes = [], themesById = {};
+
+function parseCsv(url) {
+  return new Promise((resolve, reject) => {
+    Papa.parse(url, {
+      download: true, header: true, skipEmptyLines: true,
+      complete: r => resolve(r.data),
+      error:    e => reject(e)
+    });
+  });
+}
+
+Promise.all([
+  parseCsv(`${RAW_BASE}/data/sightings.csv`),
+  parseCsv(`${RAW_BASE}/config/themes.csv`)
+]).then(([sightingsData, themesData]) => {
+  sightings = dedupeRows(sightingsData.filter(r => r.date && r.theme_id));
+  themes = themesData;
+  themesById = {};
+  themes.forEach(t => { themesById[t.theme_id] = t; });
+
+  document.getElementById('loading').style.display = 'none';
+  renderKpis();
+  renderCategory('bafu', BAFU_IDS, null, 'chart-bafu-line', 'chart-bafu-bar');
+  renderCategory('risk', RISK_IDS, riskGroup, 'chart-risk-line', 'chart-risk-bar');
+  renderCategory('strategie', STRAT_IDS, null, 'chart-strategie-line', 'chart-strategie-bar');
+}).catch(err => {
+  document.getElementById('loading').innerHTML =
+    `<p style="color:var(--ob-color-accent)">Fehler beim Laden der Daten:<br>${err}</p>`;
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AGGREGATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Jede (date, theme_id, article_url)-Kombination zählt einmal.
+function dedupeRows(rows) {
+  const seen = new Set();
+  const out = [];
+  rows.forEach(r => {
+    const key = `${r.date}|${r.theme_id}|${r.article_url}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(r);
+  });
+  return out;
+}
+
+function aggregate(rows, ids, groupFn = null) {
+  const idSet = new Set(ids);
+  const byDateTheme = {};
+  const totals = {};
+  const datesSet = new Set();
+
+  rows.filter(r => idSet.has(r.theme_id)).forEach(r => {
+    const key = groupFn ? groupFn(r.theme_id) : r.theme_id;
+    datesSet.add(r.date);
+    if (!byDateTheme[r.date]) byDateTheme[r.date] = {};
+    byDateTheme[r.date][key] = (byDateTheme[r.date][key] || 0) + 1;
+    totals[key] = (totals[key] || 0) + 1;
+  });
+
+  const allDates = [...datesSet].sort();
+  return { byDateTheme, totals, allDates };
+}
+
+function labelFor(key, groupFn) {
+  if (groupFn === riskGroup) return RISK_GROUP_LABELS[key] || key;
+  return (themesById[key] && themesById[key].label_de) || key;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KPI
+// ─────────────────────────────────────────────────────────────────────────────
+function renderKpis() {
+  const dates = new Set(sightings.map(r => r.date));
+  const sources = new Set(sightings.map(r => r.source).filter(Boolean));
+  const themesHit = new Set(sightings.map(r => r.theme_id).filter(Boolean));
+
+  setText('kpi-days', `${dates.size} Tage`);
+  setText('kpi-total', sightings.length);
+  setText('kpi-sources', sources.size);
+  setText('kpi-themes', themesHit.size);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHARTS
+// ─────────────────────────────────────────────────────────────────────────────
+function renderCategory(name, ids, groupFn, lineElId, barElId) {
+  const { byDateTheme, totals, allDates } = aggregate(sightings, ids, groupFn);
+  const sortedTotals = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+
+  renderLineChart(lineElId, allDates, sortedTotals.slice(0, 5), byDateTheme, groupFn);
+  renderBarChart(barElId, sortedTotals.slice(0, 10), groupFn);
+}
+
+function renderLineChart(elId, allDates, top5, byDateTheme, groupFn) {
+  if (top5.length === 0) {
+    document.getElementById(elId).innerHTML =
+      '<p style="color:var(--ob-color-gray);font-size:0.85rem;">Keine Daten vorhanden.</p>';
+    return;
+  }
+
+  const traces = top5.map(([key], i) => ({
+    x: allDates,
+    y: allDates.map(d => (byDateTheme[d] && byDateTheme[d][key]) || 0),
+    name: labelFor(key, groupFn),
+    type: 'scatter',
+    mode: 'lines+markers',
+    line: { color: COLORS[i % COLORS.length], width: 2.5 },
+    marker: { size: 5, color: COLORS[i % COLORS.length] }
+  }));
+
+  Plotly.newPlot(elId, traces, {
+    xaxis: { title: null, type: 'date' },
+    yaxis: { title: 'Anzahl Einträge', rangemode: 'tozero' },
+    legend: { orientation: 'h', y: -0.2 },
+    margin: { t: 40, b: 80, l: 50, r: 20 },
+    hovermode: 'x unified',
+    font: { family: 'Noto Sans, Arial, sans-serif', size: 12 }
+  }, { responsive: true, displayModeBar: false });
+}
+
+function renderBarChart(elId, top10, groupFn) {
+  if (top10.length === 0) {
+    document.getElementById(elId).innerHTML =
+      '<p style="color:var(--ob-color-gray);font-size:0.85rem;">Keine Daten vorhanden.</p>';
+    return;
+  }
+
+  const labels = top10.map(([key]) => labelFor(key, groupFn));
+  const counts = top10.map(([, count]) => count);
+
+  Plotly.newPlot(elId, [{
+    type: 'bar',
+    orientation: 'h',
+    x: counts,
+    y: labels,
+    marker: { color: COLORS[0] }
+  }], {
+    xaxis: { title: 'Anzahl Einträge' },
+    yaxis: { automargin: true, autorange: 'reversed' },
+    margin: { t: 40, b: 50, l: 200, r: 20 },
+    showlegend: false,
+    font: { family: 'Noto Sans, Arial, sans-serif', size: 12 }
+  }, { responsive: true, displayModeBar: false });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB-NAVIGATION
+// ─────────────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-item').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.tab-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(`page-${el.dataset.page}`).classList.add('active');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UTILITY
+// ─────────────────────────────────────────────────────────────────────────────
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+</script>
+</body>
+</html>

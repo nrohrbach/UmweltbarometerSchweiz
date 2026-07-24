@@ -1,0 +1,6 @@
+feedparser
+groq
+pandas
+pyproj
+requests
+pyyaml
