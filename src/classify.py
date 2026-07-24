@@ -1,9 +1,8 @@
-"""Komponente 3: KI-Klassifikation der Artikel gegen die Themenliste (Groq API, Batch-Verarbeitung)."""
+"""Komponente 3: KI-Klassifikation der Artikel in Batches (Groq API)."""
 
 import csv
 import json
 import logging
-import os
 import time
 from pathlib import Path
 
@@ -12,40 +11,48 @@ from groq import Groq
 logger = logging.getLogger(__name__)
 
 DEFAULT_THEMES_PATH = Path(__file__).resolve().parent.parent / "config" / "themes.csv"
-DEFAULT_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
-BATCH_SIZE = int(os.environ.get("GROQ_BATCH_SIZE", "12"))
-BATCH_PAUSE_SECONDS = 5
+
+# llama-3.3-70b-versatile statt 3.1-8b-instant:
+# Das 8b-Modell ist zu schwach für restriktive Mehrfach-Klassifikation gegen 52 Kategorien
+# und neigt dazu, bei Batch-Prompts viele Themen pauschal zuzuordnen statt selektiv zu sein.
+# 70b ist deutlich besser in der Befolgung komplexer Instruktionen (HAUPTINHALT-Regel).
+DEFAULT_MODEL = "llama-3.3-70b-versatile"
 
 VALID_CONFIDENCE = {"high", "medium", "low"}
 
-PROMPT_TEMPLATE = """Du bekommst eine Liste von Artikeln (Titel + Zusammenfassung, je mit einer ID) sowie eine
-Liste von Umweltthemen. Ordne JEDEN Artikel einzeln den passenden Themen zu (0, 1 oder
-mehrere möglich). Erfinde keine Themen, die nicht in der Liste stehen. Falls bei einem
-Artikel kein Thema passt, gib für diesen Artikel eine leere Themenliste zurück.
+BATCH_PROMPT_TEMPLATE = """Du bekommst eine Liste von Artikeln (jeweils mit ID, Titel und Zusammenfassung) sowie eine Liste von Umweltthemen.
+Ordne jeden Artikel den passenden Themen zu (0, 1 oder mehrere möglich). Erfinde keine Themen, die nicht in der Liste stehen.
 
-Wichtig: Nur Artikel berücksichtigen, die sich auf die Schweiz beziehen (Ereignis, Ort oder
-Auswirkung in der Schweiz). Falls sich ein Artikel auf ein rein ausländisches Ereignis
-bezieht (z.B. Naturkatastrophe im Ausland, auch wenn Schweizer Personen/Organisationen
-involviert sind), gib für diesen Artikel eine leere Themenliste zurück — auch wenn das
-Thema inhaltlich passen würde.
+WICHTIG: Sei restriktiv bei der Zuordnung. Klassifiziere einen Artikel NUR dann zu einem Thema,
+wenn das Thema der HAUPTINHALT oder ein zentraler Aspekt des Artikels ist.
+Reine Bauprojekte oder Infrastrukturvorhaben (wie Strassen- oder Bahnausbauten) sollen NICHT
+automatisch bei 'klima_allgemein' oder 'wirtschaft_konsum' landen, es sei denn, der Artikel
+thematisiert explizit eine ökologische Debatte, CO2-Bilanzen oder konkrete Umweltauflagen.
 
-Extrahiere zusätzlich pro Artikel, falls im Text erwähnt, einen konkreten Schweizer
-Ortsnamen (Gemeinde, Region, Fluss, Berg) als reinen Text — erfinde keinen Ort, falls
-keiner erwähnt wird.
+Berücksichtige nur Artikel, die sich auf die Schweiz beziehen (Ereignis, Ort oder Auswirkung
+in der Schweiz). Falls sich ein Artikel auf ein rein ausländisches Ereignis bezieht, gib eine
+leere Themenliste zurück.
+
+Falls kein Thema wirklich substanziell passt, gib eine leere Liste zurück.
+
+Beispiel für korrekte Zurückhaltung:
+Artikel: "Neues Bahngleis zwischen Zürich und Winterthur eröffnet" (ohne Umweltbezug)
+Korrekte Antwort: {{"theme_ids": [], "place_name": "Zürich", "confidence": "high"}}
+
+Extrahiere zusätzlich, falls im Text erwähnt, einen konkreten Schweizer Ortsnamen
+(Gemeinde, Region, Fluss, Berg) als reinen Text — erfinde keinen Ort, falls keiner erwähnt wird.
 
 Themenliste:
 {themes_csv_als_text}
 
-Artikel:
+Artikel-Liste:
 {articles_json}
 
-Antworte NUR als JSON-Array in diesem Format, ein Eintrag pro Artikel-ID, in derselben
-Reihenfolge wie die Eingabe:
-[
-  {{"id": "a1", "theme_ids": ["..."], "place_name": "..." oder null, "confidence": "high"|"medium"|"low"}},
-  {{"id": "a2", "theme_ids": [], "place_name": null, "confidence": "low"}},
-  ...
-]
+Antworte AUSSCHLIESSLICH als valides JSON-Objekt in diesem Format, ein Eintrag pro Artikel-ID:
+{{
+  "art_0": {{"theme_ids": ["..."], "place_name": "...", "confidence": "high"}},
+  "art_1": {{"theme_ids": [], "place_name": null, "confidence": "high"}}
+}}
 """
 
 
@@ -64,123 +71,140 @@ def _valid_theme_ids(themes_path: Path = DEFAULT_THEMES_PATH) -> set[str]:
         return {row["theme_id"] for row in reader}
 
 
-def _extract_json_array(raw_text: str) -> list | None:
-    text = raw_text.strip()
-    if text.startswith("```"):
-        text = text.strip("`")
-        if text.startswith("json"):
-            text = text[len("json"):]
-        text = text.strip()
-
-    try:
-        parsed = json.loads(text)
-    except json.JSONDecodeError:
-        return None
-
-    if not isinstance(parsed, list):
-        return None
-    return parsed
-
-
-def _call_groq(batch: list[dict], client: Groq, themes_text: str, model: str) -> list | None:
-    """Ein API-Call für einen Batch. Gibt das geparste JSON-Array zurück oder None bei Fehler."""
-    articles_payload = [
-        {"id": f"a{i}", "title": a.get("title", ""), "summary": a.get("summary", "")}
-        for i, a in enumerate(batch)
+def _classify_batch(
+    client: Groq,
+    chunk: list[dict],
+    themes_text: str,
+    valid_theme_ids: set[str],
+    attempt: int = 1,
+) -> list[dict]:
+    """Klassifiziert einen einzelnen Batch. Bei Parse-Fehler: Divide & Conquer (max. 1x)."""
+    prompt_articles = [
+        {
+            "id": f"art_{i}",
+            "title": art.get("title", ""),
+            "summary": art.get("summary", ""),
+        }
+        for i, art in enumerate(chunk)
     ]
-    prompt = PROMPT_TEMPLATE.format(
+
+    prompt = BATCH_PROMPT_TEMPLATE.format(
         themes_csv_als_text=themes_text,
-        articles_json=json.dumps(articles_payload, ensure_ascii=False, indent=2),
+        articles_json=json.dumps(prompt_articles, ensure_ascii=False, indent=2),
     )
 
     try:
         response = client.chat.completions.create(
-            model=model,
-            temperature=0,
+            model=DEFAULT_MODEL,
             messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            temperature=0.1,
         )
-        raw_text = response.choices[0].message.content
+        raw_text = response.choices[0].message.content.strip()
+        parsed_batch = json.loads(raw_text)
+
+    except json.JSONDecodeError as exc:
+        if attempt == 1 and len(chunk) > 1:
+            # Divide & Conquer: Batch in zwei Hälften aufteilen und nochmal versuchen
+            logger.warning(
+                "JSON-Parse-Fehler bei Batch (Grösse %d), teile in zwei Hälften: %s",
+                len(chunk), exc,
+            )
+            mid = len(chunk) // 2
+            time.sleep(3)
+            left = _classify_batch(client, chunk[:mid], themes_text, valid_theme_ids, attempt=2)
+            time.sleep(3)
+            right = _classify_batch(client, chunk[mid:], themes_text, valid_theme_ids, attempt=2)
+            return left + right
+        else:
+            logger.error("JSON-Parse-Fehler auch nach Aufteilung, überspringe Batch: %s", exc)
+            return [_empty_result(art) for art in chunk]
+
     except Exception as exc:
-        logger.error("Groq API-Fehler für Batch (%d Artikel): %s", len(batch), exc)
-        return None
+        logger.error("API-Fehler bei Batch: %s", exc)
+        return [_empty_result(art) for art in chunk]
 
-    parsed = _extract_json_array(raw_text)
-    if parsed is None:
-        logger.error("JSON-Parse-Fehler für Batch (%d Artikel): %r", len(batch), raw_text)
-    return parsed
+    # Ergebnisse per ID matchen (nicht per Position)
+    results = []
+    for i, art in enumerate(chunk):
+        res_key = f"art_{i}"
+        parsed = parsed_batch.get(res_key, {})
 
+        if not isinstance(parsed, dict):
+            logger.warning("Unerwartetes Format für %s, überspringe.", res_key)
+            results.append(_empty_result(art))
+            continue
 
-def classify_batch(
-    batch: list[dict],
-    client: Groq,
-    themes_text: str,
-    valid_theme_ids: set[str],
-    model: str = DEFAULT_MODEL,
-) -> list[dict]:
-    """Klassifiziert einen Batch. Bei Parse-Fehlern wird der Batch geteilt und erneut versucht
-    (Divide and Conquer), statt den ganzen Lauf abzubrechen."""
-    if not batch:
-        return []
-
-    parsed = _call_groq(batch, client, themes_text, model)
-
-    if parsed is None:
-        if len(batch) == 1:
-            logger.error("Klassifikation für '%s' endgültig fehlgeschlagen, wird übersprungen", batch[0].get("title"))
-            return []
-        mid = len(batch) // 2
-        return classify_batch(batch[:mid], client, themes_text, valid_theme_ids, model) + classify_batch(
-            batch[mid:], client, themes_text, valid_theme_ids, model
+        theme_ids = parsed.get("theme_ids", [])
+        theme_ids = (
+            [t for t in theme_ids if t in valid_theme_ids]
+            if isinstance(theme_ids, list)
+            else []
         )
 
-    by_id = {item.get("id"): item for item in parsed if isinstance(item, dict)}
-
-    results = []
-    for i, article in enumerate(batch):
-        article_id = f"a{i}"
-        item = by_id.get(article_id)
-        if item is None:
-            logger.error("Antwort enthält keine ID '%s' für Artikel '%s', wird übersprungen", article_id, article.get("title"))
-            continue
-
-        theme_ids = item.get("theme_ids", [])
-        if not isinstance(theme_ids, list):
-            logger.error("Ungültiges theme_ids-Format für '%s': %r", article.get("title"), theme_ids)
-            continue
-        # Nur gegen die vorgegebene Liste klassifizieren — erfundene Themen werden verworfen.
-        theme_ids = [t for t in theme_ids if t in valid_theme_ids]
-
-        confidence = item.get("confidence")
+        confidence = parsed.get("confidence")
         if confidence not in VALID_CONFIDENCE:
             confidence = None
 
-        results.append(
-            {
-                "article": article,
-                "classification": {
-                    "theme_ids": theme_ids,
-                    "place_name": item.get("place_name") or None,
-                    "confidence": confidence,
-                },
-            }
-        )
+        results.append({
+            "article": art,
+            "classification": {
+                "theme_ids": theme_ids,
+                "place_name": parsed.get("place_name") or None,
+                "confidence": confidence,
+            },
+        })
 
     return results
 
 
-def classify_articles(articles: list[dict], themes_path: Path = DEFAULT_THEMES_PATH) -> list[dict]:
-    """Klassifiziert alle Artikel in Batches von BATCH_SIZE und gibt eine Liste von
-    (article, classification)-Ergebnissen zurück."""
+def _empty_result(art: dict) -> dict:
+    """Leeres Ergebnis für einen Artikel, bei dem die Klassifikation fehlgeschlagen ist."""
+    return {
+        "article": art,
+        "classification": {
+            "theme_ids": [],
+            "place_name": None,
+            "confidence": None,
+        },
+    }
+
+
+def classify_articles(
+    articles: list[dict],
+    themes_path: Path = DEFAULT_THEMES_PATH,
+    batch_size: int = 5,
+) -> list[dict]:
+    """Klassifiziert Artikel in Batches via Groq API.
+
+    Args:
+        articles: Liste von Artikel-Dicts mit 'title', 'summary', 'url', 'source'.
+        themes_path: Pfad zur themes.csv.
+        batch_size: Artikel pro Batch (Standard 5 — bei 70b-Modell und 52 Themen
+                    ca. 2'500 Tokens/Batch, gut innerhalb des 6'000-Token/min-Limits).
+
+    Returns:
+        Liste von Dicts mit 'article' und 'classification' (theme_ids, place_name, confidence).
+    """
     client = Groq()
     themes_text = load_themes_as_text(themes_path)
     valid_theme_ids = _valid_theme_ids(themes_path)
 
     results = []
-    for start in range(0, len(articles), BATCH_SIZE):
-        batch = articles[start : start + BATCH_SIZE]
-        results.extend(classify_batch(batch, client, themes_text, valid_theme_ids))
-        if start + BATCH_SIZE < len(articles):
-            time.sleep(BATCH_PAUSE_SECONDS)
+
+    for chunk_start in range(0, len(articles), batch_size):
+        if chunk_start > 0:
+            # Pause zwischen Batches wegen 6'000-Tokens/min-Limit bei Groq Gratis-Tarif
+            time.sleep(5)
+
+        chunk = articles[chunk_start: chunk_start + batch_size]
+        logger.info(
+            "Klassifiziere Batch %d-%d von %d Artikeln",
+            chunk_start + 1, min(chunk_start + batch_size, len(articles)), len(articles),
+        )
+
+        batch_results = _classify_batch(client, chunk, themes_text, valid_theme_ids)
+        results.extend(batch_results)
 
     return results
 
@@ -189,17 +213,25 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     test_articles = [
         {
-            "title": "Hitzewelle sorgt für Rekordtemperaturen im Mittelland",
-            "summary": "Meteorologen warnen vor gesundheitlichen Risiken durch die anhaltende Hitze.",
-            "url": "https://example.com/hitze",
-            "source": "test",
+            "title": "Hitzestress im Wald – Sonnenbrand bei Bäumen",
+            "summary": "Der Klimawandel trifft die Region Basel hart. Immer häufiger braucht es Notfällungen.",
+            "url": "https://example.com/1",
+            "source": "srf",
         },
         {
-            "title": "Waldbrand-Flucht Südfrankreich",
-            "summary": "Tausende Touristen, auch Schweizer, mussten evakuiert werden.",
-            "url": "https://example.com/waldbrand-frankreich",
-            "source": "test",
+            "title": "Wenn der Redefluss stockt – Im Stottercamp reden lernen",
+            "summary": "Kinder lernen im Ferienlager den Umgang mit ihrer Sprachstörung.",
+            "url": "https://example.com/2",
+            "source": "srf",
+        },
+        {
+            "title": "Neue Bahnstrecke Zürich–Winterthur eröffnet",
+            "summary": "Der Ausbau beseitigt einen Engpass im nationalen Bahnverkehr.",
+            "url": "https://example.com/3",
+            "source": "srf",
         },
     ]
     for r in classify_articles(test_articles):
-        print(r)
+        print(r["article"]["title"])
+        print(" ->", r["classification"])
+        print()
