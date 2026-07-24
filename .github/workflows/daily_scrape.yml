@@ -31,3 +31,10 @@ jobs:
           git add data/sightings.csv
           git diff --quiet --cached || git commit -m "Daily data: $(date -u +%Y-%m-%d)"
           git push
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages

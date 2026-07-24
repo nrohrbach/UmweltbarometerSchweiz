@@ -33,6 +33,8 @@ python src/main.py
 ## Repo-Struktur
 
 ```
+├── index.html                           # Visualisierung (statisch, GitHub Pages)
+├── vendor/oblique/                      # vendorierte Oblique-CSS-Distribution (MIT)
 ├── .github/workflows/daily_scrape.yml   # täglicher Cron-Job via GitHub Actions
 ├── config/
 │   ├── feeds.yaml                       # RSS-Feed-Liste
@@ -51,4 +53,14 @@ python src/main.py
 
 Der Workflow läuft täglich um 05:00 UTC (07:00 MEZ) und kann zusätzlich manuell über
 `workflow_dispatch` gestartet werden. Dafür muss im Repo unter Settings → Secrets and
-variables → Actions das Secret `GROQ_API_KEY` hinterlegt werden.
+variables → Actions das Secret `GROQ_API_KEY` hinterlegt werden. Nach jedem Lauf wird
+`index.html` (inkl. `data/` und `config/`) automatisch auf den `gh-pages`-Branch deployt.
+
+## Visualisierung
+
+`index.html` ist eine statische Single-Page-Ansicht (Plotly.js + PapaParse, beide via CDN,
+kein Build-Schritt) mit drei Tabs — BAFU-Themen, Klimarisiken, Strategie 2030 — mit je einer
+Zeitreihe (Top 5) und einem Balkendiagramm (Top 10). Sie lädt `data/sightings.csv` und
+`config/themes.csv` direkt per Raw-URL aus dem `main`-Branch und aggregiert im Browser.
+Lokal testen: `python -m http.server 8000` im Repo-Root, dann `http://localhost:8000`
+öffnen (Achtung: die Raw-URLs greifen erst, sobald die Daten auf `main` gepusht sind).
