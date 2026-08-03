@@ -173,6 +173,66 @@
     }
     @media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
 
+    /* ─── SELEKTIONSLEISTE (Drill-Down) ──────────────────────────── */
+    .selection-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--ob-color-primary-light);
+      border: var(--ob-border);
+      border-radius: var(--ob-radius);
+      padding: var(--ob-space-sm) var(--ob-space-lg);
+      margin-top: var(--ob-space-lg);
+      font-size: 0.88rem;
+      color: var(--ob-color-primary-dark);
+      font-weight: 700;
+    }
+    .selection-clear {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      color: var(--ob-color-gray-dark);
+      padding: 0 var(--ob-space-sm);
+    }
+    .selection-clear:hover { color: var(--ob-color-accent); }
+
+    /* ─── DRILL-DOWN-TABELLE ──────────────────────────────────────── */
+    .table-card { display: none; margin-top: var(--ob-space-lg); }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .data-table th {
+      background: var(--ob-color-primary-light);
+      color: var(--ob-color-primary-dark);
+      font-weight: 700;
+      padding: var(--ob-space-sm) var(--ob-space-md);
+      text-align: left;
+      border-bottom: 2px solid var(--ob-color-primary);
+    }
+    .data-table td {
+      padding: var(--ob-space-sm) var(--ob-space-md);
+      border-bottom: var(--ob-border);
+      vertical-align: top;
+    }
+    .data-table tr:hover td { background: var(--ob-color-primary-light); }
+    .data-table a { color: var(--ob-color-primary-dark); }
+
+    /* ─── BADGE (Konfidenz) ───────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-high   { background: #DCF3E6; color: #0A7A3D; }
+    .badge-medium { background: #FCEFCB; color: #8A6100; }
+    .badge-low    { background: #E4E7EA; color: var(--ob-color-gray-dark); }
+
     /* ─── LOADING ─────────────────────────────────────────────── */
     #loading {
       position: fixed; inset: 0;
@@ -255,6 +315,17 @@
         <div id="chart-bafu-bar"></div>
       </div>
     </div>
+
+    <div class="selection-bar" id="selection-bar-bafu">
+      <span id="selection-text-bafu"></span>
+      <button class="selection-clear" data-category="bafu" title="Auswahl aufheben">×</button>
+    </div>
+    <div class="chart-card table-card" id="table-card-bafu">
+      <table class="data-table ob-table" id="table-bafu">
+        <thead><tr><th>Datum</th><th>Quelle</th><th>Titel</th><th>Ort</th><th>Konfidenz</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- ── KLIMARISIKEN ──────────────────────────────────────────── -->
@@ -271,6 +342,17 @@
         <div id="chart-risk-bar"></div>
       </div>
     </div>
+
+    <div class="selection-bar" id="selection-bar-risk">
+      <span id="selection-text-risk"></span>
+      <button class="selection-clear" data-category="risk" title="Auswahl aufheben">×</button>
+    </div>
+    <div class="chart-card table-card" id="table-card-risk">
+      <table class="data-table ob-table" id="table-risk">
+        <thead><tr><th>Datum</th><th>Quelle</th><th>Titel</th><th>Ort</th><th>Konfidenz</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- ── STRATEGIE 2030 ────────────────────────────────────────── -->
@@ -286,6 +368,17 @@
         <h2>Top 10 — Gesamteinträge Strategie 2030</h2>
         <div id="chart-strategie-bar"></div>
       </div>
+    </div>
+
+    <div class="selection-bar" id="selection-bar-strategie">
+      <span id="selection-text-strategie"></span>
+      <button class="selection-clear" data-category="strategie" title="Auswahl aufheben">×</button>
+    </div>
+    <div class="chart-card table-card" id="table-card-strategie">
+      <table class="data-table ob-table" id="table-strategie">
+        <thead><tr><th>Datum</th><th>Quelle</th><th>Titel</th><th>Ort</th><th>Konfidenz</th></tr></thead>
+        <tbody></tbody>
+      </table>
     </div>
   </div>
 
@@ -338,6 +431,27 @@ const RISK_GROUP_LABELS = {
   oekosystemleistungen: 'Ökosystem', schadorganismen: 'Schadorganismen',
   landschaftsbild: 'Landschaftsbild'
 };
+
+const SOURCE_LABELS = {
+  srf: 'SRF', nzz: 'NZZ', '20min': '20 Minuten', tagesanzeiger: 'Tages-Anzeiger',
+  blick: 'Blick', aargauerzeitung: 'Aargauer Zeitung', letemps: 'Le Temps',
+  cdt: 'Corriere del Ticino', laregione: 'laRegione'
+};
+
+const MONTHS_DE = ['Januar','Februar','März','April','Mai','Juni','Juli',
+  'August','September','Oktober','November','Dezember'];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DRILL-DOWN STATE
+// ─────────────────────────────────────────────────────────────────────────────
+const state = {
+  category: 'bafu',   // aktive Tab-Kategorie
+  date: null,          // selektiertes Datum (YYYY-MM-DD) oder null
+  themeId: null,        // selektierte theme_id (bzw. Risiko-Gruppen-Key) oder null
+  themeLabel: null      // Anzeigename für Statuszeile
+};
+
+const lineChartMeta = {}; // category -> { keys, allDates, groupFn }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DATENLADEN
@@ -430,25 +544,29 @@ function renderKpis() {
 // ─────────────────────────────────────────────────────────────────────────────
 // CHARTS
 // ─────────────────────────────────────────────────────────────────────────────
-function renderCategory(name, ids, groupFn, lineElId, barElId) {
+function renderCategory(category, ids, groupFn, lineElId, barElId) {
   const { byDateTheme, totals, allDates } = aggregate(sightings, ids, groupFn);
   const sortedTotals = Object.entries(totals).sort((a, b) => b[1] - a[1]);
 
-  renderLineChart(lineElId, allDates, sortedTotals.slice(0, 5), byDateTheme, groupFn);
+  renderLineChart(category, lineElId, allDates, sortedTotals.slice(0, 5), byDateTheme, groupFn);
   renderBarChart(barElId, sortedTotals.slice(0, 10), groupFn);
 }
 
-function renderLineChart(elId, allDates, top5, byDateTheme, groupFn) {
+function renderLineChart(category, elId, allDates, top5, byDateTheme, groupFn) {
   if (top5.length === 0) {
     document.getElementById(elId).innerHTML =
       '<p style="color:var(--ob-color-gray);font-size:0.85rem;">Keine Daten vorhanden.</p>';
     return;
   }
 
+  const keys = top5.map(([key]) => key);
+  lineChartMeta[category] = { keys, allDates, groupFn };
+
   const traces = top5.map(([key], i) => ({
     x: allDates,
     y: allDates.map(d => (byDateTheme[d] && byDateTheme[d][key]) || 0),
     name: labelFor(key, groupFn),
+    customdata: key,
     type: 'scatter',
     mode: 'lines+markers',
     line: { color: COLORS[i % COLORS.length], width: 2.5 },
@@ -463,6 +581,20 @@ function renderLineChart(elId, allDates, top5, byDateTheme, groupFn) {
     hovermode: 'x unified',
     font: { family: 'Noto Sans, Arial, sans-serif', size: 12 }
   }, { responsive: true, displayModeBar: false });
+
+  const chartDiv = document.getElementById(elId);
+  chartDiv.on('plotly_click', function (data) {
+    const point = data.points[0];
+    const clickedDate = point.x;
+    const clickedThemeId = point.data.customdata;
+    const clickedThemeLabel = point.data.name;
+
+    if (state.category === category && state.date === clickedDate && state.themeId === clickedThemeId) {
+      clearSelection();
+    } else {
+      setSelection(category, clickedDate, clickedThemeId, clickedThemeLabel);
+    }
+  });
 }
 
 function renderBarChart(elId, top10, groupFn) {
@@ -491,6 +623,117 @@ function renderBarChart(elId, top10, groupFn) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// DRILL-DOWN: SELEKTION, TABELLE, CHART-HIGHLIGHT
+// ─────────────────────────────────────────────────────────────────────────────
+function setSelection(category, date, themeId, themeLabel) {
+  state.category = category;
+  state.date = date;
+  state.themeId = themeId;
+  state.themeLabel = themeLabel;
+  renderTable();
+  updateChartHighlight();
+}
+
+function clearSelection() {
+  state.date = null;
+  state.themeId = null;
+  state.themeLabel = null;
+  renderTable();
+  updateChartHighlight();
+}
+
+// Für Klimarisiken arbeitet der Chart mit Gruppen-Keys (z.B. 'hitze') statt
+// einzelnen theme_ids — hier auf alle theme_ids der Gruppe auflösen.
+function getMatchingThemeIds(category, key) {
+  if (category === 'risk') {
+    return RISK_IDS.filter(id => riskGroup(id) === key);
+  }
+  return [key];
+}
+
+function renderTable() {
+  ['bafu', 'risk', 'strategie'].forEach(category => {
+    const bar = document.getElementById(`selection-bar-${category}`);
+    const card = document.getElementById(`table-card-${category}`);
+    const active = state.category === category && state.date && state.themeId;
+
+    if (!active) {
+      bar.style.display = 'none';
+      card.style.display = 'none';
+      return;
+    }
+
+    const themeIds = new Set(getMatchingThemeIds(category, state.themeId));
+    const matched = sightings.filter(r => r.date === state.date && themeIds.has(r.theme_id));
+
+    // Ein Artikel kann mehrere theme_ids haben → über article_url deduplizieren.
+    const seenUrls = new Set();
+    const rows = [];
+    matched.forEach(r => {
+      if (seenUrls.has(r.article_url)) return;
+      seenUrls.add(r.article_url);
+      rows.push(r);
+    });
+    rows.sort((a, b) => {
+      const bySource = (a.source || '').localeCompare(b.source || '');
+      return bySource !== 0 ? bySource : (a.article_title || '').localeCompare(b.article_title || '');
+    });
+
+    bar.style.display = 'flex';
+    card.style.display = 'block';
+    document.getElementById(`selection-text-${category}`).textContent =
+      `▼ ${formatDateLong(state.date)} — ${state.themeLabel} — ${rows.length} Artikel`;
+
+    document.querySelector(`#table-${category} tbody`).innerHTML = rows.map(tableRowHtml).join('');
+  });
+}
+
+function tableRowHtml(r) {
+  const sourceLabel = SOURCE_LABELS[r.source] || r.source || '';
+  const titleCell = r.article_url
+    ? `<a href="${escapeHtml(r.article_url)}" target="_blank" rel="noopener">${escapeHtml(r.article_title)}</a>`
+    : escapeHtml(r.article_title || '');
+  const confidence = r.classification_confidence;
+  const badge = confidence ? `<span class="badge badge-${escapeHtml(confidence)}">${escapeHtml(confidence)}</span>` : '';
+
+  return `<tr>
+    <td>${formatDateShort(r.date)}</td>
+    <td>${escapeHtml(sourceLabel)}</td>
+    <td>${titleCell}</td>
+    <td>${escapeHtml(r.place_name_raw || '')}</td>
+    <td>${badge}</td>
+  </tr>`;
+}
+
+function updateChartHighlight() {
+  ['bafu', 'risk', 'strategie'].forEach(category => {
+    const meta = lineChartMeta[category];
+    if (!meta) return;
+
+    const elId = `chart-${category}-line`;
+    const active = state.category === category && state.date && state.themeId;
+
+    const opacities = meta.keys.map(key => !active ? 1 : (key === state.themeId ? 1 : 0.3));
+    Plotly.restyle(elId, { opacity: opacities });
+
+    meta.keys.forEach((key, traceIdx) => {
+      const isSelectedTrace = active && key === state.themeId;
+      const sizes = meta.allDates.map(d => (isSelectedTrace && d === state.date) ? 12 : 5);
+      const lineWidths = meta.allDates.map(d => (isSelectedTrace && d === state.date) ? 2 : 0);
+      Plotly.restyle(elId, {
+        'marker.size': [sizes],
+        'marker.line.width': [lineWidths],
+        'marker.line.color': [meta.allDates.map(() => '#333')]
+      }, [traceIdx]);
+    });
+  });
+}
+
+document.querySelectorAll('.selection-clear').forEach(btn => {
+  btn.addEventListener('click', clearSelection);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // TAB-NAVIGATION
 // ─────────────────────────────────────────────────────────────────────────────
 document.querySelectorAll('.tab-item').forEach(el => {
@@ -499,6 +742,10 @@ document.querySelectorAll('.tab-item').forEach(el => {
     el.classList.add('active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`page-${el.dataset.page}`).classList.add('active');
+
+    // theme_ids sind kategorienübergreifend nicht vergleichbar → Selektion aufheben.
+    state.category = el.dataset.page;
+    clearSelection();
   });
 });
 
@@ -508,6 +755,26 @@ document.querySelectorAll('.tab-item').forEach(el => {
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
+}
+
+// YYYY-MM-DD -> DD.MM.YYYY
+function formatDateShort(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  return `${d}.${m}.${y}`;
+}
+
+// YYYY-MM-DD -> "14. Juli 2026"
+function formatDateLong(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  const day = parseInt(d, 10);
+  const month = MONTHS_DE[parseInt(m, 10) - 1];
+  return `${day}. ${month} ${y}`;
 }
 </script>
 </body>
