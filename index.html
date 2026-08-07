@@ -233,6 +233,76 @@
     .badge-medium { background: #FCEFCB; color: #8A6100; }
     .badge-low    { background: #E4E7EA; color: var(--ob-color-gray-dark); }
 
+    /* ─── HEATMAP TOOLBAR (Dropdown + Reset) ─────────────────────── */
+    .heatmap-toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--ob-space-md);
+      margin-bottom: var(--ob-space-lg);
+      flex-wrap: wrap;
+    }
+    .heatmap-toolbar label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--ob-color-primary-dark);
+    }
+    .ob-select {
+      font-family: var(--ob-font-family);
+      font-size: 0.85rem;
+      color: var(--ob-color-black);
+      background: var(--ob-color-white);
+      border: 1px solid var(--ob-color-gray-light);
+      border-radius: var(--ob-radius);
+      padding: 6px 10px;
+      min-width: 220px;
+    }
+    .heatmap-reset {
+      background: transparent;
+      border: 1px solid var(--ob-color-gray-light);
+      border-radius: var(--ob-radius);
+      color: var(--ob-color-gray-dark);
+      font-size: 0.82rem;
+      padding: 5px 10px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    .heatmap-reset:hover { background: var(--ob-color-primary-light); color: var(--ob-color-primary-dark); }
+
+    /* ─── MONATS-NAVIGATION ───────────────────────────────────────── */
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--ob-space-md);
+      margin-bottom: var(--ob-space-md);
+    }
+    .ob-btn-nav {
+      background: var(--ob-color-white);
+      border: 1px solid var(--ob-color-gray-light);
+      border-radius: var(--ob-radius);
+      color: var(--ob-color-primary-dark);
+      font-size: 0.82rem;
+      padding: 5px 12px;
+      cursor: pointer;
+    }
+    .ob-btn-nav:hover:not(:disabled) { background: var(--ob-color-primary-light); }
+    .ob-btn-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+    .month-label { font-weight: 700; min-width: 140px; text-align: center; color: var(--ob-color-primary-dark); }
+
+    /* ─── KALENDER-HEATMAP ────────────────────────────────────────── */
+    .heatmap-wrap { overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; }
+    .heatmap-cell { cursor: pointer; }
+    .heatmap-legend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      justify-content: flex-end;
+      font-size: 0.72rem;
+      color: var(--ob-color-gray);
+      margin-top: var(--ob-space-sm);
+    }
+    .legend-swatch { width: 14px; height: 14px; border-radius: 2px; display: inline-block; }
+
     /* ─── LOADING ─────────────────────────────────────────────── */
     #loading {
       position: fixed; inset: 0;
@@ -316,6 +386,34 @@
       </div>
     </div>
 
+    <div class="chart-card">
+      <div class="heatmap-toolbar">
+        <label for="theme-filter-bafu">Thema filtern:</label>
+        <select id="theme-filter-bafu" class="ob-select"></select>
+        <button class="heatmap-reset" data-category="bafu">× Auswahl reset</button>
+      </div>
+
+      <div class="month-nav">
+        <button id="btn-prev-bafu" class="ob-btn-nav">← Vorheriger Monat</button>
+        <span id="month-label-bafu" class="month-label"></span>
+        <button id="btn-next-bafu" class="ob-btn-nav">Nächster Monat →</button>
+      </div>
+
+      <div class="heatmap-wrap">
+        <svg id="heatmap-bafu"></svg>
+      </div>
+
+      <div class="heatmap-legend">
+        <span>Weniger</span>
+        <span class="legend-swatch" style="background:#ebedf0"></span>
+        <span class="legend-swatch" style="background:#dbeafe"></span>
+        <span class="legend-swatch" style="background:#93c5fd"></span>
+        <span class="legend-swatch" style="background:#3b82f6"></span>
+        <span class="legend-swatch" style="background:#1d4ed8"></span>
+        <span>Mehr</span>
+      </div>
+    </div>
+
     <div class="selection-bar" id="selection-bar-bafu">
       <span id="selection-text-bafu"></span>
       <button class="selection-clear" data-category="bafu" title="Auswahl aufheben">×</button>
@@ -343,6 +441,34 @@
       </div>
     </div>
 
+    <div class="chart-card">
+      <div class="heatmap-toolbar">
+        <label for="theme-filter-risk">Thema filtern:</label>
+        <select id="theme-filter-risk" class="ob-select"></select>
+        <button class="heatmap-reset" data-category="risk">× Auswahl reset</button>
+      </div>
+
+      <div class="month-nav">
+        <button id="btn-prev-risk" class="ob-btn-nav">← Vorheriger Monat</button>
+        <span id="month-label-risk" class="month-label"></span>
+        <button id="btn-next-risk" class="ob-btn-nav">Nächster Monat →</button>
+      </div>
+
+      <div class="heatmap-wrap">
+        <svg id="heatmap-risk"></svg>
+      </div>
+
+      <div class="heatmap-legend">
+        <span>Weniger</span>
+        <span class="legend-swatch" style="background:#ebedf0"></span>
+        <span class="legend-swatch" style="background:#fce7f3"></span>
+        <span class="legend-swatch" style="background:#f9a8d4"></span>
+        <span class="legend-swatch" style="background:#ec4899"></span>
+        <span class="legend-swatch" style="background:#9d174d"></span>
+        <span>Mehr</span>
+      </div>
+    </div>
+
     <div class="selection-bar" id="selection-bar-risk">
       <span id="selection-text-risk"></span>
       <button class="selection-clear" data-category="risk" title="Auswahl aufheben">×</button>
@@ -367,6 +493,34 @@
       <div class="chart-card">
         <h2>Top 10 — Gesamteinträge Strategie 2030</h2>
         <div id="chart-strategie-bar"></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="heatmap-toolbar">
+        <label for="theme-filter-strategie">Thema filtern:</label>
+        <select id="theme-filter-strategie" class="ob-select"></select>
+        <button class="heatmap-reset" data-category="strategie">× Auswahl reset</button>
+      </div>
+
+      <div class="month-nav">
+        <button id="btn-prev-strategie" class="ob-btn-nav">← Vorheriger Monat</button>
+        <span id="month-label-strategie" class="month-label"></span>
+        <button id="btn-next-strategie" class="ob-btn-nav">Nächster Monat →</button>
+      </div>
+
+      <div class="heatmap-wrap">
+        <svg id="heatmap-strategie"></svg>
+      </div>
+
+      <div class="heatmap-legend">
+        <span>Weniger</span>
+        <span class="legend-swatch" style="background:#ebedf0"></span>
+        <span class="legend-swatch" style="background:#d1fae5"></span>
+        <span class="legend-swatch" style="background:#6ee7b7"></span>
+        <span class="legend-swatch" style="background:#10b981"></span>
+        <span class="legend-swatch" style="background:#065f46"></span>
+        <span>Mehr</span>
       </div>
     </div>
 
@@ -442,16 +596,24 @@ const MONTHS_DE = ['Januar','Februar','März','April','Mai','Juni','Juli',
   'August','September','Oktober','November','Dezember'];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DRILL-DOWN STATE
+// HEATMAP-FILTER STATE
 // ─────────────────────────────────────────────────────────────────────────────
-const state = {
-  category: 'bafu',   // aktive Tab-Kategorie
-  date: null,          // selektiertes Datum (YYYY-MM-DD) oder null
-  themeId: null,        // selektierte theme_id (bzw. Risiko-Gruppen-Key) oder null
-  themeLabel: null      // Anzeigename für Statuszeile
+// Kategoriefarben für die Heatmap, konsistent mit den Line-Chart-Basisfarben.
+const CAT_COLORS = {
+  bafu:      { steps: ['#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'] },
+  risk:      { steps: ['#fce7f3', '#f9a8d4', '#ec4899', '#9d174d'] },
+  strategie: { steps: ['#d1fae5', '#6ee7b7', '#10b981', '#065f46'] }
 };
 
-const lineChartMeta = {}; // category -> { keys, allDates, groupFn }
+const state = {
+  category: 'bafu',    // aktive Tab-Kategorie
+  themeId: null,        // gewähltes Thema/Gruppe im Dropdown, null = alle
+  selectedDate: null,   // angeklickter Tag (YYYY-MM-DD) oder null
+  viewYear: null,        // aktuell angezeigtes Kalenderjahr der Heatmap
+  viewMonth: null        // aktuell angezeigter Kalendermonat der Heatmap (0-11)
+};
+
+let firstMonthWithData = null; // { year, month } — Grenze für "Vorheriger Monat"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DATENLADEN
@@ -482,6 +644,17 @@ Promise.all([
   renderCategory('bafu', BAFU_IDS, null, 'chart-bafu-line', 'chart-bafu-bar');
   renderCategory('risk', RISK_IDS, riskGroup, 'chart-risk-line', 'chart-risk-bar');
   renderCategory('strategie', STRAT_IDS, null, 'chart-strategie-line', 'chart-strategie-bar');
+
+  populateThemeDropdown('bafu');
+  populateThemeDropdown('risk');
+  populateThemeDropdown('strategie');
+
+  firstMonthWithData = computeFirstMonthWithData();
+  const latest = computeLatestMonthWithData();
+  state.viewYear = latest.year;
+  state.viewMonth = latest.month;
+
+  renderCurrentMonth('bafu');
 }).catch(err => {
   document.getElementById('loading').innerHTML =
     `<p style="color:var(--ob-color-accent)">Fehler beim Laden der Daten:<br>${err}</p>`;
@@ -559,14 +732,10 @@ function renderLineChart(category, elId, allDates, top5, byDateTheme, groupFn) {
     return;
   }
 
-  const keys = top5.map(([key]) => key);
-  lineChartMeta[category] = { keys, allDates, groupFn };
-
   const traces = top5.map(([key], i) => ({
     x: allDates,
     y: allDates.map(d => (byDateTheme[d] && byDateTheme[d][key]) || 0),
     name: labelFor(key, groupFn),
-    customdata: key,
     type: 'scatter',
     mode: 'lines+markers',
     line: { color: COLORS[i % COLORS.length], width: 2.5 },
@@ -581,20 +750,6 @@ function renderLineChart(category, elId, allDates, top5, byDateTheme, groupFn) {
     hovermode: 'x unified',
     font: { family: 'Noto Sans, Arial, sans-serif', size: 12 }
   }, { responsive: true, displayModeBar: false });
-
-  const chartDiv = document.getElementById(elId);
-  chartDiv.on('plotly_click', function (data) {
-    const point = data.points[0];
-    const clickedDate = point.x;
-    const clickedThemeId = point.data.customdata;
-    const clickedThemeLabel = point.data.name;
-
-    if (state.category === category && state.date === clickedDate && state.themeId === clickedThemeId) {
-      clearSelection();
-    } else {
-      setSelection(category, clickedDate, clickedThemeId, clickedThemeLabel);
-    }
-  });
 }
 
 function renderBarChart(elId, top10, groupFn) {
@@ -623,26 +778,11 @@ function renderBarChart(elId, top10, groupFn) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DRILL-DOWN: SELEKTION, TABELLE, CHART-HIGHLIGHT
+// HEATMAP: FILTERUNG & AGGREGATION
 // ─────────────────────────────────────────────────────────────────────────────
-function setSelection(category, date, themeId, themeLabel) {
-  state.category = category;
-  state.date = date;
-  state.themeId = themeId;
-  state.themeLabel = themeLabel;
-  renderTable();
-  updateChartHighlight();
-}
+const CATEGORY_IDS = { bafu: BAFU_IDS, risk: RISK_IDS, strategie: STRAT_IDS };
 
-function clearSelection() {
-  state.date = null;
-  state.themeId = null;
-  state.themeLabel = null;
-  renderTable();
-  updateChartHighlight();
-}
-
-// Für Klimarisiken arbeitet der Chart mit Gruppen-Keys (z.B. 'hitze') statt
+// Für Klimarisiken arbeitet die Heatmap mit Gruppen-Keys (z.B. 'hitze') statt
 // einzelnen theme_ids — hier auf alle theme_ids der Gruppe auflösen.
 function getMatchingThemeIds(category, key) {
   if (category === 'risk') {
@@ -651,41 +791,257 @@ function getMatchingThemeIds(category, key) {
   return [key];
 }
 
-function renderTable() {
-  ['bafu', 'risk', 'strategie'].forEach(category => {
-    const bar = document.getElementById(`selection-bar-${category}`);
-    const card = document.getElementById(`table-card-${category}`);
-    const active = state.category === category && state.date && state.themeId;
+// Alle sightings-Zeilen der Kategorie, optional weiter auf ein gewähltes Thema gefiltert.
+function filterSightings(rows, category, themeId) {
+  const idSet = new Set(CATEGORY_IDS[category]);
+  let filtered = rows.filter(r => idSet.has(r.theme_id));
+  if (themeId) {
+    const matchIds = new Set(getMatchingThemeIds(category, themeId));
+    filtered = filtered.filter(r => matchIds.has(r.theme_id));
+  }
+  return filtered;
+}
 
-    if (!active) {
-      bar.style.display = 'none';
-      card.style.display = 'none';
-      return;
+// Anzahl Einträge pro Tag, dedupliziert nach article_url (ein Artikel zählt pro Tag einmal).
+function aggregateByDate(rows) {
+  const result = {};
+  const seen = new Set();
+  rows.forEach(r => {
+    const key = r.date + '|' + r.article_url;
+    if (seen.has(key)) return;
+    seen.add(key);
+    result[r.date] = (result[r.date] || 0) + 1;
+  });
+  return result;
+}
+
+function colorForCount(count, max, category) {
+  if (count === 0) return '#ebedf0';
+  const ratio = count / max;
+  const steps = CAT_COLORS[category].steps;
+  if (ratio < 0.25) return steps[0];
+  if (ratio < 0.50) return steps[1];
+  if (ratio < 0.75) return steps[2];
+  return steps[3];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HEATMAP: SVG-RENDERING (ein Kalendermonat, GitHub-Contribution-Graph-Stil)
+// ─────────────────────────────────────────────────────────────────────────────
+const CELL = 14, GAP = 3, STEP = CELL + GAP, LABEL_W = 26, TOP_PAD = 4;
+const WEEKDAY_LABELS = ['Mo', '', 'Mi', '', 'Fr', '', ''];
+
+function renderHeatmap(category, countByDate) {
+  const svg = document.getElementById(`heatmap-${category}`);
+  const ns = 'http://www.w3.org/2000/svg';
+  svg.innerHTML = '';
+
+  const year = state.viewYear, month = state.viewMonth;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7; // Mo=0..So=6
+  const numWeeks = Math.ceil((firstWeekday + daysInMonth) / 7);
+
+  const width = LABEL_W + numWeeks * STEP;
+  const height = TOP_PAD + 7 * STEP;
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+  const max = Object.values(countByDate).reduce((m, v) => Math.max(m, v), 0);
+
+  WEEKDAY_LABELS.forEach((label, row) => {
+    if (!label) return;
+    const text = document.createElementNS(ns, 'text');
+    text.setAttribute('x', 0);
+    text.setAttribute('y', TOP_PAD + row * STEP + CELL - 3);
+    text.setAttribute('font-size', '9');
+    text.setAttribute('fill', '#828E9A');
+    text.textContent = label;
+    svg.appendChild(text);
+  });
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const cellIndex = firstWeekday + day - 1;
+    const col = Math.floor(cellIndex / 7);
+    const row = cellIndex % 7;
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const count = countByDate[dateStr] || 0;
+
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', LABEL_W + col * STEP);
+    rect.setAttribute('y', TOP_PAD + row * STEP);
+    rect.setAttribute('width', CELL);
+    rect.setAttribute('height', CELL);
+    rect.setAttribute('rx', 2);
+    rect.setAttribute('fill', colorForCount(count, max, category));
+    rect.dataset.date = dateStr;
+    rect.dataset.count = count;
+    rect.classList.add('heatmap-cell');
+    if (dateStr === state.selectedDate) {
+      rect.style.stroke = '#333';
+      rect.style.strokeWidth = '2';
     }
 
-    const themeIds = new Set(getMatchingThemeIds(category, state.themeId));
-    const matched = sightings.filter(r => r.date === state.date && themeIds.has(r.theme_id));
+    const title = document.createElementNS(ns, 'title');
+    title.textContent = formatTooltip(dateStr, count);
+    rect.appendChild(title);
 
-    // Ein Artikel kann mehrere theme_ids haben → über article_url deduplizieren.
-    const seenUrls = new Set();
-    const rows = [];
-    matched.forEach(r => {
-      if (seenUrls.has(r.article_url)) return;
-      seenUrls.add(r.article_url);
-      rows.push(r);
-    });
-    rows.sort((a, b) => {
-      const bySource = (a.source || '').localeCompare(b.source || '');
-      return bySource !== 0 ? bySource : (a.article_title || '').localeCompare(b.article_title || '');
-    });
+    rect.addEventListener('click', () => selectDay(category, dateStr));
+    svg.appendChild(rect);
+  }
+}
 
-    bar.style.display = 'flex';
-    card.style.display = 'block';
-    document.getElementById(`selection-text-${category}`).textContent =
-      `▼ ${formatDateLong(state.date)} — ${state.themeLabel} — ${rows.length} Artikel`;
+function formatTooltip(dateStr, count) {
+  const themeLabel = state.themeId ? ` — ${currentThemeLabel()}` : '';
+  return `${formatDateLong(dateStr)}${themeLabel} — ${count} Einträge`;
+}
 
-    document.querySelector(`#table-${category} tbody`).innerHTML = rows.map(tableRowHtml).join('');
+function currentThemeLabel() {
+  if (!state.themeId) return 'Alle Themen';
+  return labelFor(state.themeId, state.category === 'risk' ? riskGroup : null);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HEATMAP: MONATS-NAVIGATION
+// ─────────────────────────────────────────────────────────────────────────────
+function computeFirstMonthWithData() {
+  const dates = sightings.map(r => r.date).filter(Boolean).sort();
+  if (!dates.length) return null;
+  const [y, m] = dates[0].split('-').map(Number);
+  return { year: y, month: m - 1 };
+}
+
+function computeLatestMonthWithData() {
+  const dates = sightings.map(r => r.date).filter(Boolean).sort();
+  if (!dates.length) {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  }
+  const [y, m] = dates[dates.length - 1].split('-').map(Number);
+  return { year: y, month: m - 1 };
+}
+
+function prevMonth(category) {
+  if (state.viewMonth === 0) { state.viewYear--; state.viewMonth = 11; }
+  else { state.viewMonth--; }
+  state.selectedDate = null;
+  renderCurrentMonth(category);
+}
+
+function nextMonth(category) {
+  if (state.viewMonth === 11) { state.viewYear++; state.viewMonth = 0; }
+  else { state.viewMonth++; }
+  state.selectedDate = null;
+  renderCurrentMonth(category);
+}
+
+function updateNavButtons(category) {
+  const now = new Date();
+  document.getElementById(`btn-prev-${category}`).disabled = !!firstMonthWithData &&
+    state.viewYear === firstMonthWithData.year && state.viewMonth === firstMonthWithData.month;
+  document.getElementById(`btn-next-${category}`).disabled =
+    state.viewYear === now.getFullYear() && state.viewMonth === now.getMonth();
+}
+
+function updateMonthLabel(category) {
+  document.getElementById(`month-label-${category}`).textContent =
+    `${MONTHS_DE[state.viewMonth]} ${state.viewYear}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HEATMAP: THEMEN-DROPDOWN
+// ─────────────────────────────────────────────────────────────────────────────
+function populateThemeDropdown(category) {
+  const select = document.getElementById(`theme-filter-${category}`);
+  select.innerHTML = '<option value="">Alle Themen</option>';
+
+  let options;
+  if (category === 'risk') {
+    const groupKeys = [...new Set(RISK_IDS.map(riskGroup))];
+    options = groupKeys.map(key => ({ value: key, label: `${RISK_GROUP_LABELS[key] || key} (alle Unterrisiken)` }));
+  } else {
+    options = CATEGORY_IDS[category].map(id => ({ value: id, label: (themesById[id] && themesById[id].label_de) || id }));
+  }
+  options.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  options.forEach(opt => {
+    const el = document.createElement('option');
+    el.value = opt.value;
+    el.textContent = opt.label;
+    select.appendChild(el);
   });
+
+  select.addEventListener('change', () => {
+    state.themeId = select.value || null;
+    state.selectedDate = null; // Themen-Wechsel hebt Tages-Selektion auf
+    renderCurrentMonth(category);
+  });
+}
+
+function resetFilter(category) {
+  state.themeId = null;
+  state.selectedDate = null;
+  document.getElementById(`theme-filter-${category}`).value = '';
+  renderCurrentMonth(category);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HEATMAP: TAGES-SELEKTION & ARTIKELTABELLE
+// ─────────────────────────────────────────────────────────────────────────────
+function selectDay(category, date) {
+  state.selectedDate = (state.selectedDate === date) ? null : date;
+  updateDayHighlight(category);
+  renderTable(category);
+}
+
+function updateDayHighlight(category) {
+  document.querySelectorAll(`#heatmap-${category} rect.heatmap-cell`).forEach(rect => {
+    if (rect.dataset.date === state.selectedDate) {
+      rect.style.stroke = '#333';
+      rect.style.strokeWidth = '2';
+    } else {
+      rect.style.stroke = 'none';
+    }
+  });
+}
+
+function clearDaySelection(category) {
+  state.selectedDate = null;
+  updateDayHighlight(category);
+  renderTable(category);
+}
+
+function renderTable(category) {
+  const bar = document.getElementById(`selection-bar-${category}`);
+  const card = document.getElementById(`table-card-${category}`);
+
+  if (!state.selectedDate) {
+    bar.style.display = 'none';
+    card.style.display = 'none';
+    return;
+  }
+
+  const rows = filterSightings(sightings, category, state.themeId).filter(r => r.date === state.selectedDate);
+
+  // Ein Artikel kann mehrere theme_ids haben → über article_url deduplizieren.
+  const seenUrls = new Set();
+  const dedup = [];
+  rows.forEach(r => {
+    if (seenUrls.has(r.article_url)) return;
+    seenUrls.add(r.article_url);
+    dedup.push(r);
+  });
+  dedup.sort((a, b) => {
+    const bySource = (a.source || '').localeCompare(b.source || '');
+    return bySource !== 0 ? bySource : (a.article_title || '').localeCompare(b.article_title || '');
+  });
+
+  bar.style.display = 'flex';
+  card.style.display = 'block';
+  document.getElementById(`selection-text-${category}`).textContent =
+    `▼ ${formatDateLong(state.selectedDate)} — ${currentThemeLabel()} — ${dedup.length} Artikel`;
+
+  document.querySelector(`#table-${category} tbody`).innerHTML = dedup.map(tableRowHtml).join('');
 }
 
 function tableRowHtml(r) {
@@ -705,32 +1061,29 @@ function tableRowHtml(r) {
   </tr>`;
 }
 
-function updateChartHighlight() {
-  ['bafu', 'risk', 'strategie'].forEach(category => {
-    const meta = lineChartMeta[category];
-    if (!meta) return;
-
-    const elId = `chart-${category}-line`;
-    const active = state.category === category && state.date && state.themeId;
-
-    const opacities = meta.keys.map(key => !active ? 1 : (key === state.themeId ? 1 : 0.3));
-    Plotly.restyle(elId, { opacity: opacities });
-
-    meta.keys.forEach((key, traceIdx) => {
-      const isSelectedTrace = active && key === state.themeId;
-      const sizes = meta.allDates.map(d => (isSelectedTrace && d === state.date) ? 12 : 5);
-      const lineWidths = meta.allDates.map(d => (isSelectedTrace && d === state.date) ? 2 : 0);
-      Plotly.restyle(elId, {
-        'marker.size': [sizes],
-        'marker.line.width': [lineWidths],
-        'marker.line.color': [meta.allDates.map(() => '#333')]
-      }, [traceIdx]);
-    });
-  });
+// ─────────────────────────────────────────────────────────────────────────────
+// HEATMAP: GESAMT-RENDER FÜR DEN AKTUELLEN MONAT
+// ─────────────────────────────────────────────────────────────────────────────
+function renderCurrentMonth(category) {
+  const rows = filterSightings(sightings, category, state.themeId);
+  const countByDate = aggregateByDate(rows);
+  renderHeatmap(category, countByDate);
+  updateMonthLabel(category);
+  updateNavButtons(category);
+  renderTable(category);
 }
 
 document.querySelectorAll('.selection-clear').forEach(btn => {
-  btn.addEventListener('click', clearSelection);
+  btn.addEventListener('click', () => clearDaySelection(btn.dataset.category));
+});
+
+document.querySelectorAll('.heatmap-reset').forEach(btn => {
+  btn.addEventListener('click', () => resetFilter(btn.dataset.category));
+});
+
+['bafu', 'risk', 'strategie'].forEach(category => {
+  document.getElementById(`btn-prev-${category}`).addEventListener('click', () => prevMonth(category));
+  document.getElementById(`btn-next-${category}`).addEventListener('click', () => nextMonth(category));
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -743,9 +1096,14 @@ document.querySelectorAll('.tab-item').forEach(el => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`page-${el.dataset.page}`).classList.add('active');
 
-    // theme_ids sind kategorienübergreifend nicht vergleichbar → Selektion aufheben.
-    state.category = el.dataset.page;
-    clearSelection();
+    // Dropdown & Tages-Selektion zurücksetzen — theme_ids sind kategorienübergreifend
+    // nicht vergleichbar, viewYear/viewMonth bleiben aber erhalten.
+    const category = el.dataset.page;
+    state.category = category;
+    state.themeId = null;
+    state.selectedDate = null;
+    document.getElementById(`theme-filter-${category}`).value = '';
+    renderCurrentMonth(category);
   });
 });
 
