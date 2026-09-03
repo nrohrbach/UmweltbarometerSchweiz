@@ -16,7 +16,7 @@ DEFAULT_THEMES_PATH = Path(__file__).resolve().parent.parent / "config" / "theme
 # Das 8b-Modell ist zu schwach für restriktive Mehrfach-Klassifikation gegen 52 Kategorien
 # und neigt dazu, bei Batch-Prompts viele Themen pauschal zuzuordnen statt selektiv zu sein.
 # 70b ist deutlich besser in der Befolgung komplexer Instruktionen (HAUPTINHALT-Regel).
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 
 VALID_CONFIDENCE = {"high", "medium", "low"}
 
