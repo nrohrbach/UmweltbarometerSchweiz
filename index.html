@@ -3,71 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Umwelt-Aufmerksamkeitsbarometer-Schweiz</title>
+  <title>Umwelt-Aufmerksamkeitsbarometer Schweiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
   <style>
-    /* Eigene CSS Custom Properties, Werte 1:1 aus den offiziellen
-       Oblique Design Tokens (@oblique/oblique/styles/scss/core/_variables.scss
-       und _palette.scss, Version 15.4.0). */
     :root {
-      --ob-color-primary:       #46596B; /* $ob-primary  (secondary-500) */
-      --ob-color-primary-dark:  #263645; /* secondary-700 */
-      --ob-color-primary-light: #F0F4F7; /* secondary-50  ($ob-extra-light) */
-      --ob-color-accent:        #E53940; /* $ob-accent (red-500) */
-      --ob-color-black:         #1C2834; /* $ob-default (secondary-800) */
-      --ob-color-gray-dark:     #46596B; /* secondary-500 */
-      --ob-color-gray:          #828E9A; /* secondary-300 */
-      --ob-color-gray-light:    #ACB4BD; /* secondary-200 */
-      --ob-color-bg:            #F0F4F7; /* secondary-50 ($ob-extra-light) */
-      --ob-color-white:         #FFFFFF;
-      --ob-font-family:         'Noto Sans', Arial, system-ui, -apple-system, BlinkMacSystemFont, sans-serif; /* $ob-font */
-      --ob-space-xs:  4px;   /* $ob-spacing-xs */
-      --ob-space-sm:  8px;   /* $ob-spacing-sm */
-      --ob-space-md:  12px;  /* $ob-spacing-md */
-      --ob-space-lg:  24px;  /* $ob-spacing-lg */
-      --ob-space-xl:  32px;  /* $ob-spacing-xl */
-      --ob-shadow:    0 2px 4px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.08); /* ob-shadow-default */
-      --ob-radius:    4px;   /* $ob-border-radius-base */
-      --ob-border:    1px solid var(--ob-color-gray-light);
+      --c-primary: #2a78d6;
+      --c-surface: #ffffff;
+      --c-bg:      #f5f5f4;
+      --c-border:  #e2e0da;
+      --c-text:    #1c1b18;
+      --c-muted:   #6b6a66;
+      --c-danger:  #e34948;
+      --radius:    8px;
+      --shadow:    0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+      --font:      'Inter', system-ui, -apple-system, sans-serif;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: var(--ob-font-family);
-      background: var(--ob-color-bg);
-      color: var(--ob-color-black);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--c-text);
+      background: var(--c-bg);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
+    h1 { font-size: 20px; font-weight: 600; margin: 0; }
+    h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
+
     /* ─── HEADER ─────────────────────────────────────────────── */
     header {
-      background: var(--ob-color-white);
-      color: var(--ob-color-black);
-      padding: var(--ob-space-sm) var(--ob-space-xl);
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border);
+      padding: 0 24px;
+      height: 56px;
       display: flex;
       align-items: center;
-      gap: var(--ob-space-md);
-      border-bottom: 1px solid #DFE4E9; /* secondary-100 */
+      justify-content: space-between;
+      flex-shrink: 0;
     }
-    header h1 {
-      font-size: 1.5rem;
-      font-weight: 300;
-      letter-spacing: 0.01em;
-      padding-left: var(--ob-space-sm);
-      border-left: 1px solid #DFE4E9;
-    }
-    header p  { font-size: 0.82rem; color: var(--ob-color-gray-dark); margin-top: 2px; }
+    .header-brand { display: flex; align-items: center; gap: 12px; }
+    .header-emoji { font-size: 22px; }
+    .header-title { font-weight: 600; font-size: 15px; }
+    .header-subtitle { color: var(--c-muted); font-size: 13px; margin-left: 8px; }
+    #last-updated { font-size: 12px; color: var(--c-muted); }
 
     /* ─── MAIN ────────────────────────────────────────────────── */
     main {
       flex: 1;
-      padding: var(--ob-space-xl);
-      max-width: 1280px;
+      padding: 24px;
+      max-width: 1200px;
       width: 100%;
       margin: 0 auto;
     }
@@ -75,92 +67,76 @@
     /* ─── KPI GRID ────────────────────────────────────────────── */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: var(--ob-space-md);
-      margin-bottom: var(--ob-space-xl);
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
     }
-    .kpi-card {
-      background: var(--ob-color-white);
-      border: var(--ob-border);
-      border-radius: var(--ob-radius);
-      padding: var(--ob-space-lg);
-      box-shadow: var(--ob-shadow);
+    .kpi {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
     }
-    .kpi-card .kpi-label {
-      font-size: 0.78rem;
-      color: var(--ob-color-gray);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: var(--ob-space-sm);
-    }
-    .kpi-card .kpi-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--ob-color-primary);
-      line-height: 1;
-    }
+    .kpi-label { font-size: 12px; color: var(--c-muted); margin: 0 0 4px; }
+    .kpi-value { font-size: 22px; font-weight: 600; margin: 0; color: var(--c-text); }
 
     /* ─── TAB NAVIGATION ──────────────────────────────────────── */
     nav.tabs {
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border);
+      padding: 0 24px;
       display: flex;
-      gap: var(--ob-space-xs);
-      border-bottom: 2px solid var(--ob-color-gray-light);
-      margin-bottom: var(--ob-space-xl);
+      gap: 0;
+      margin: 0 -24px 24px;
     }
-    .tab-item {
-      padding: 10px var(--ob-space-lg);
-      cursor: pointer;
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: var(--ob-color-gray-dark);
-      background: transparent;
+    .tab-btn {
+      padding: 12px 20px;
       border: none;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      background: none;
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--c-muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color .15s, border-color .15s;
     }
-    .tab-item:hover { background: var(--ob-color-primary-light); color: var(--ob-color-primary-dark); }
-    .tab-item.active {
-      border-bottom-color: var(--ob-color-primary);
-      color: var(--ob-color-primary-dark);
-    }
+    .tab-btn:hover  { color: var(--c-text); }
+    .tab-btn.active { color: var(--c-primary); border-bottom-color: var(--c-primary); font-weight: 500; }
 
     /* ─── PAGE ────────────────────────────────────────────────── */
     .page { display: none; }
     .page.active { display: block; }
 
     .page-title {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--ob-color-primary-dark);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--c-text);
       margin-bottom: 2px;
     }
     .page-subtitle {
-      font-size: 0.88rem;
-      color: var(--ob-color-gray);
-      margin-bottom: var(--ob-space-lg);
+      font-size: 13px;
+      color: var(--c-muted);
+      margin-bottom: 20px;
     }
 
-    /* ─── CHART CARDS ─────────────────────────────────────────── */
-    .chart-card {
-      background: var(--ob-color-white);
-      border: var(--ob-border);
-      border-radius: var(--ob-radius);
-      box-shadow: var(--ob-shadow);
-      padding: var(--ob-space-lg);
+    /* ─── CARD ────────────────────────────────────────────────── */
+    .card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
     }
-    .chart-card h2 {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--ob-color-primary-dark);
-      margin-bottom: var(--ob-space-md);
-      padding-bottom: var(--ob-space-sm);
-      border-bottom: var(--ob-border);
+    .card h2 {
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--c-border);
     }
     .chart-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: var(--ob-space-lg);
+      gap: 16px;
+      margin-bottom: 16px;
     }
     @media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
 
@@ -169,116 +145,127 @@
       display: none;
       align-items: center;
       justify-content: space-between;
-      background: var(--ob-color-primary-light);
-      border: var(--ob-border);
-      border-radius: var(--ob-radius);
-      padding: var(--ob-space-sm) var(--ob-space-lg);
-      margin-top: var(--ob-space-lg);
-      font-size: 0.88rem;
-      color: var(--ob-color-primary-dark);
-      font-weight: 700;
+      padding: 10px 16px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--c-text);
+      font-weight: 500;
+      margin-top: 16px;
     }
-    .selection-clear {
-      background: transparent;
+    .clear-btn {
       border: none;
+      background: none;
       cursor: pointer;
-      font-size: 1.1rem;
+      font-size: 16px;
       line-height: 1;
-      color: var(--ob-color-gray-dark);
-      padding: 0 var(--ob-space-sm);
+      color: var(--c-muted);
+      padding: 0 4px;
     }
-    .selection-clear:hover { color: var(--ob-color-accent); }
+    .clear-btn:hover { color: var(--c-text); }
 
     /* ─── DRILL-DOWN-TABELLE ──────────────────────────────────────── */
-    .table-card { display: none; margin-top: var(--ob-space-lg); }
+    .table-card { display: none; margin-top: 16px; }
     .data-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.85rem;
+      font-size: 13px;
     }
     .data-table th {
-      background: var(--ob-color-primary-light);
-      color: var(--ob-color-primary-dark);
-      font-weight: 700;
-      padding: var(--ob-space-sm) var(--ob-space-md);
       text-align: left;
-      border-bottom: 2px solid var(--ob-color-primary);
+      padding: 8px 12px;
+      background: var(--c-bg);
+      border-bottom: 1px solid var(--c-border);
+      font-weight: 500;
+      color: var(--c-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
     }
     .data-table td {
-      padding: var(--ob-space-sm) var(--ob-space-md);
-      border-bottom: var(--ob-border);
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--c-border);
       vertical-align: top;
     }
-    .data-table tr:hover td { background: var(--ob-color-primary-light); }
-    .data-table a { color: var(--ob-color-primary-dark); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--c-bg); }
+    .data-table a { color: var(--c-primary); text-decoration: none; }
+    .data-table a:hover { text-decoration: underline; }
 
     /* ─── BADGE (Konfidenz) ───────────────────────────────────────── */
     .badge {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
     }
-    .badge-high   { background: #DCF3E6; color: #0A7A3D; }
-    .badge-medium { background: #FCEFCB; color: #8A6100; }
-    .badge-low    { background: #E4E7EA; color: var(--ob-color-gray-dark); }
+    .badge-high   { background: #dcfce7; color: #166534; }
+    .badge-medium { background: #fef9c3; color: #854d0e; }
+    .badge-low    { background: #f3f4f6; color: #4b5563; }
 
     /* ─── HEATMAP TOOLBAR (Dropdown + Reset) ─────────────────────── */
     .heatmap-toolbar {
       display: flex;
       align-items: center;
-      gap: var(--ob-space-md);
-      margin-bottom: var(--ob-space-lg);
+      gap: 12px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
     }
     .heatmap-toolbar label {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--ob-color-primary-dark);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--c-text);
     }
-    .ob-select {
-      font-family: var(--ob-font-family);
-      font-size: 0.85rem;
-      color: var(--ob-color-black);
-      background: var(--ob-color-white);
-      border: 1px solid var(--ob-color-gray-light);
-      border-radius: var(--ob-radius);
-      padding: 6px 10px;
+    .filter-select {
+      font-family: var(--font);
+      padding: 7px 12px;
+      border: 1px solid var(--c-border);
+      border-radius: 6px;
+      background: var(--c-surface);
+      font-size: 13px;
+      color: var(--c-text);
+      cursor: pointer;
       min-width: 220px;
     }
+    .filter-select:focus { outline: 2px solid var(--c-primary); outline-offset: 1px; }
     .heatmap-reset {
       background: transparent;
-      border: 1px solid var(--ob-color-gray-light);
-      border-radius: var(--ob-radius);
-      color: var(--ob-color-gray-dark);
-      font-size: 0.82rem;
-      padding: 5px 10px;
+      border: 1px solid var(--c-border);
+      border-radius: 6px;
+      color: var(--c-muted);
+      font-family: var(--font);
+      font-size: 13px;
+      padding: 6px 12px;
       cursor: pointer;
       margin-left: auto;
     }
-    .heatmap-reset:hover { background: var(--ob-color-primary-light); color: var(--ob-color-primary-dark); }
+    .heatmap-reset:hover { background: var(--c-bg); color: var(--c-text); }
 
     /* ─── MONATS-NAVIGATION ───────────────────────────────────────── */
     .month-nav {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: var(--ob-space-md);
-      margin-bottom: var(--ob-space-md);
+      gap: 12px;
+      margin-bottom: 16px;
     }
-    .ob-btn-nav {
-      background: var(--ob-color-white);
-      border: 1px solid var(--ob-color-gray-light);
-      border-radius: var(--ob-radius);
-      color: var(--ob-color-primary-dark);
-      font-size: 0.82rem;
-      padding: 5px 12px;
+    .nav-btn {
+      padding: 6px 14px;
+      border: 1px solid var(--c-border);
+      border-radius: 6px;
+      background: var(--c-surface);
       cursor: pointer;
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--c-text);
+      transition: background .15s;
     }
-    .ob-btn-nav:hover:not(:disabled) { background: var(--ob-color-primary-light); }
-    .ob-btn-nav:disabled { opacity: 0.4; cursor: not-allowed; }
-    .month-label { font-weight: 700; min-width: 140px; text-align: center; color: var(--ob-color-primary-dark); }
+    .nav-btn:hover:not(:disabled) { background: var(--c-bg); }
+    .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .month-label { font-weight: 500; min-width: 140px; text-align: center; color: var(--c-text); }
 
     /* ─── KALENDER-HEATMAP ────────────────────────────────────────── */
     .heatmap-wrap { overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; }
@@ -288,9 +275,9 @@
       align-items: center;
       gap: 4px;
       justify-content: flex-end;
-      font-size: 0.72rem;
-      color: var(--ob-color-gray);
-      margin-top: var(--ob-space-sm);
+      font-size: 12px;
+      color: var(--c-muted);
+      margin-top: 8px;
     }
     .legend-swatch { width: 14px; height: 14px; border-radius: 2px; display: inline-block; }
 
@@ -300,18 +287,18 @@
       background: rgba(255,255,255,0.9);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: var(--ob-space-md);
+      gap: 12px;
       z-index: 100;
     }
     .spinner {
       width: 42px; height: 42px;
-      border: 4px solid var(--ob-color-gray-light);
-      border-top-color: var(--ob-color-primary);
+      border: 4px solid var(--c-border);
+      border-top-color: var(--c-primary);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    #loading p { color: var(--ob-color-gray-dark); font-size: 0.95rem; }
+    #loading p { color: var(--c-muted); font-size: 14px; }
   </style>
 </head>
 <body>
@@ -324,71 +311,71 @@
 
 <!-- Header -->
 <header>
-  <div style="display:flex;align-items:center;gap:12px">
-    <span style="font-size:22px">🌿</span>
+  <div class="header-brand">
+    <span class="header-emoji">🌿</span>
     <div>
-      <span style="font-weight:600;font-size:15px">Umwelt-Aufmerksamkeitsbarometer</span>
-      <span style="color:var(--ob-color-gray-dark);font-size:13px;margin-left:8px">Schweiz</span>
+      <span class="header-title">Umwelt-Aufmerksamkeitsbarometer</span>
+      <span class="header-subtitle">Schweiz</span>
     </div>
   </div>
-  <span id="last-updated" style="font-size:12px;color:var(--ob-color-gray-dark)"></span>
+  <span id="last-updated"></span>
 </header>
+
+<!-- Tab-Navigation -->
+<nav class="tabs">
+  <button class="tab-btn active" data-page="bafu">BAFU-Themen</button>
+  <button class="tab-btn" data-page="risk">Klimarisiken</button>
+  <button class="tab-btn" data-page="strategie">Strategie 2030</button>
+</nav>
 
 <main>
 
   <!-- KPI-Zeile -->
   <div class="kpi-grid">
-    <div class="kpi-card">
+    <div class="kpi">
       <div class="kpi-label">Zeitraum</div>
       <div class="kpi-value" id="kpi-days">–</div>
     </div>
-    <div class="kpi-card">
+    <div class="kpi">
       <div class="kpi-label">Einträge gesamt</div>
       <div class="kpi-value" id="kpi-total">–</div>
     </div>
-    <div class="kpi-card">
+    <div class="kpi">
       <div class="kpi-label">Quellen</div>
       <div class="kpi-value" id="kpi-sources">–</div>
     </div>
-    <div class="kpi-card">
+    <div class="kpi">
       <div class="kpi-label">Themen mit Treffern</div>
       <div class="kpi-value" id="kpi-themes">–</div>
     </div>
   </div>
-
-  <!-- Tab-Navigation -->
-  <nav class="tabs">
-    <button class="tab-item active" data-page="bafu">BAFU-Themen</button>
-    <button class="tab-item" data-page="risk">Klimarisiken</button>
-    <button class="tab-item" data-page="strategie">Strategie 2030</button>
-  </nav>
 
   <!-- ── BAFU-THEMEN ─────────────────────────────────────────── -->
   <div id="page-bafu" class="page active">
     <div class="page-title">BAFU-Themen</div>
     <div class="page-subtitle">Medienaufmerksamkeit für die 19 übergeordneten BAFU-Umweltthemen</div>
     <div class="chart-row">
-      <div class="chart-card">
+      <div class="card">
         <h2>Medienaufmerksamkeit über Zeit — Top 5 BAFU-Themen</h2>
         <div id="chart-bafu-line"></div>
       </div>
-      <div class="chart-card">
+      <div class="card">
         <h2>Top 10 — Gesamteinträge BAFU-Themen</h2>
         <div id="chart-bafu-bar"></div>
       </div>
     </div>
 
-    <div class="chart-card">
+    <div class="card">
       <div class="heatmap-toolbar">
         <label for="theme-filter-bafu">Thema filtern:</label>
-        <select id="theme-filter-bafu" class="ob-select"></select>
+        <select id="theme-filter-bafu" class="filter-select"></select>
         <button class="heatmap-reset" data-category="bafu">× Auswahl reset</button>
       </div>
 
       <div class="month-nav">
-        <button id="btn-prev-bafu" class="ob-btn-nav">← Vorheriger Monat</button>
+        <button id="btn-prev-bafu" class="nav-btn">← Vorheriger Monat</button>
         <span id="month-label-bafu" class="month-label"></span>
-        <button id="btn-next-bafu" class="ob-btn-nav">Nächster Monat →</button>
+        <button id="btn-next-bafu" class="nav-btn">Nächster Monat →</button>
       </div>
 
       <div class="heatmap-wrap">
@@ -408,10 +395,10 @@
 
     <div class="selection-bar" id="selection-bar-bafu">
       <span id="selection-text-bafu"></span>
-      <button class="selection-clear" data-category="bafu" title="Auswahl aufheben">×</button>
+      <button class="clear-btn" data-category="bafu" title="Auswahl aufheben">×</button>
     </div>
-    <div class="chart-card table-card" id="table-card-bafu">
-      <table class="data-table ob-table" id="table-bafu">
+    <div class="card table-card" id="table-card-bafu">
+      <table class="data-table" id="table-bafu">
         <thead><tr><th>Datum</th><th>Quelle</th><th>Titel</th><th>Ort</th><th>Konfidenz</th></tr></thead>
         <tbody></tbody>
       </table>
@@ -423,27 +410,27 @@
     <div class="page-title">Klimarisiken</div>
     <div class="page-subtitle">Medienaufmerksamkeit für die Risikogruppen der BAFU-Klima-Risikoanalyse</div>
     <div class="chart-row">
-      <div class="chart-card">
+      <div class="card">
         <h2>Medienaufmerksamkeit über Zeit — Top 5 Klimarisiken</h2>
         <div id="chart-risk-line"></div>
       </div>
-      <div class="chart-card">
+      <div class="card">
         <h2>Top 10 — Gesamteinträge Klimarisiken</h2>
         <div id="chart-risk-bar"></div>
       </div>
     </div>
 
-    <div class="chart-card">
+    <div class="card">
       <div class="heatmap-toolbar">
         <label for="theme-filter-risk">Thema filtern:</label>
-        <select id="theme-filter-risk" class="ob-select"></select>
+        <select id="theme-filter-risk" class="filter-select"></select>
         <button class="heatmap-reset" data-category="risk">× Auswahl reset</button>
       </div>
 
       <div class="month-nav">
-        <button id="btn-prev-risk" class="ob-btn-nav">← Vorheriger Monat</button>
+        <button id="btn-prev-risk" class="nav-btn">← Vorheriger Monat</button>
         <span id="month-label-risk" class="month-label"></span>
-        <button id="btn-next-risk" class="ob-btn-nav">Nächster Monat →</button>
+        <button id="btn-next-risk" class="nav-btn">Nächster Monat →</button>
       </div>
 
       <div class="heatmap-wrap">
@@ -463,10 +450,10 @@
 
     <div class="selection-bar" id="selection-bar-risk">
       <span id="selection-text-risk"></span>
-      <button class="selection-clear" data-category="risk" title="Auswahl aufheben">×</button>
+      <button class="clear-btn" data-category="risk" title="Auswahl aufheben">×</button>
     </div>
-    <div class="chart-card table-card" id="table-card-risk">
-      <table class="data-table ob-table" id="table-risk">
+    <div class="card table-card" id="table-card-risk">
+      <table class="data-table" id="table-risk">
         <thead><tr><th>Datum</th><th>Quelle</th><th>Titel</th><th>Ort</th><th>Konfidenz</th></tr></thead>
         <tbody></tbody>
       </table>
@@ -478,27 +465,27 @@
     <div class="page-title">Strategie 2030</div>
     <div class="page-subtitle">Medienaufmerksamkeit für die BAFU-Strategieziele 2030</div>
     <div class="chart-row">
-      <div class="chart-card">
+      <div class="card">
         <h2>Medienaufmerksamkeit über Zeit — Top 5 Strategie 2030</h2>
         <div id="chart-strategie-line"></div>
       </div>
-      <div class="chart-card">
+      <div class="card">
         <h2>Top 10 — Gesamteinträge Strategie 2030</h2>
         <div id="chart-strategie-bar"></div>
       </div>
     </div>
 
-    <div class="chart-card">
+    <div class="card">
       <div class="heatmap-toolbar">
         <label for="theme-filter-strategie">Thema filtern:</label>
-        <select id="theme-filter-strategie" class="ob-select"></select>
+        <select id="theme-filter-strategie" class="filter-select"></select>
         <button class="heatmap-reset" data-category="strategie">× Auswahl reset</button>
       </div>
 
       <div class="month-nav">
-        <button id="btn-prev-strategie" class="ob-btn-nav">← Vorheriger Monat</button>
+        <button id="btn-prev-strategie" class="nav-btn">← Vorheriger Monat</button>
         <span id="month-label-strategie" class="month-label"></span>
-        <button id="btn-next-strategie" class="ob-btn-nav">Nächster Monat →</button>
+        <button id="btn-next-strategie" class="nav-btn">Nächster Monat →</button>
       </div>
 
       <div class="heatmap-wrap">
@@ -518,10 +505,10 @@
 
     <div class="selection-bar" id="selection-bar-strategie">
       <span id="selection-text-strategie"></span>
-      <button class="selection-clear" data-category="strategie" title="Auswahl aufheben">×</button>
+      <button class="clear-btn" data-category="strategie" title="Auswahl aufheben">×</button>
     </div>
-    <div class="chart-card table-card" id="table-card-strategie">
-      <table class="data-table ob-table" id="table-strategie">
+    <div class="card table-card" id="table-card-strategie">
+      <table class="data-table" id="table-strategie">
         <thead><tr><th>Datum</th><th>Quelle</th><th>Titel</th><th>Ort</th><th>Konfidenz</th></tr></thead>
         <tbody></tbody>
       </table>
@@ -649,7 +636,7 @@ Promise.all([
   renderCurrentMonth('bafu');
 }).catch(err => {
   document.getElementById('loading').innerHTML =
-    `<p style="color:var(--ob-color-accent)">Fehler beim Laden der Daten:<br>${err}</p>`;
+    `<p style="color:var(--c-danger)">Fehler beim Laden der Daten:<br>${err}</p>`;
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -720,7 +707,7 @@ function renderCategory(category, ids, groupFn, lineElId, barElId) {
 function renderLineChart(category, elId, allDates, top5, byDateTheme, groupFn) {
   if (top5.length === 0) {
     document.getElementById(elId).innerHTML =
-      '<p style="color:var(--ob-color-gray);font-size:0.85rem;">Keine Daten vorhanden.</p>';
+      '<p style="color:var(--c-muted);font-size:0.85rem;">Keine Daten vorhanden.</p>';
     return;
   }
 
@@ -740,14 +727,14 @@ function renderLineChart(category, elId, allDates, top5, byDateTheme, groupFn) {
     legend: { orientation: 'h', y: -0.2 },
     margin: { t: 40, b: 80, l: 50, r: 20 },
     hovermode: 'x unified',
-    font: { family: 'Noto Sans, Arial, sans-serif', size: 12 }
+    font: { family: 'Inter, system-ui, sans-serif', size: 12 }
   }, { responsive: true, displayModeBar: false });
 }
 
 function renderBarChart(elId, top10, groupFn) {
   if (top10.length === 0) {
     document.getElementById(elId).innerHTML =
-      '<p style="color:var(--ob-color-gray);font-size:0.85rem;">Keine Daten vorhanden.</p>';
+      '<p style="color:var(--c-muted);font-size:0.85rem;">Keine Daten vorhanden.</p>';
     return;
   }
 
@@ -765,7 +752,7 @@ function renderBarChart(elId, top10, groupFn) {
     yaxis: { automargin: true, autorange: 'reversed' },
     margin: { t: 40, b: 50, l: 200, r: 20 },
     showlegend: false,
-    font: { family: 'Noto Sans, Arial, sans-serif', size: 12 }
+    font: { family: 'Inter, system-ui, sans-serif', size: 12 }
   }, { responsive: true, displayModeBar: false });
 }
 
@@ -847,7 +834,7 @@ function renderHeatmap(category, countByDate) {
     text.setAttribute('x', 0);
     text.setAttribute('y', TOP_PAD + row * STEP + CELL - 3);
     text.setAttribute('font-size', '9');
-    text.setAttribute('fill', '#828E9A');
+    text.setAttribute('fill', '#6b6a66');
     text.textContent = label;
     svg.appendChild(text);
   });
@@ -870,7 +857,7 @@ function renderHeatmap(category, countByDate) {
     rect.dataset.count = count;
     rect.classList.add('heatmap-cell');
     if (dateStr === state.selectedDate) {
-      rect.style.stroke = '#333';
+      rect.style.stroke = '#1c1b18';
       rect.style.strokeWidth = '2';
     }
 
@@ -989,7 +976,7 @@ function selectDay(category, date) {
 function updateDayHighlight(category) {
   document.querySelectorAll(`#heatmap-${category} rect.heatmap-cell`).forEach(rect => {
     if (rect.dataset.date === state.selectedDate) {
-      rect.style.stroke = '#333';
+      rect.style.stroke = '#1c1b18';
       rect.style.strokeWidth = '2';
     } else {
       rect.style.stroke = 'none';
@@ -1065,7 +1052,7 @@ function renderCurrentMonth(category) {
   renderTable(category);
 }
 
-document.querySelectorAll('.selection-clear').forEach(btn => {
+document.querySelectorAll('.clear-btn').forEach(btn => {
   btn.addEventListener('click', () => clearDaySelection(btn.dataset.category));
 });
 
@@ -1081,9 +1068,9 @@ document.querySelectorAll('.heatmap-reset').forEach(btn => {
 // ─────────────────────────────────────────────────────────────────────────────
 // TAB-NAVIGATION
 // ─────────────────────────────────────────────────────────────────────────────
-document.querySelectorAll('.tab-item').forEach(el => {
+document.querySelectorAll('.tab-btn').forEach(el => {
   el.addEventListener('click', () => {
-    document.querySelectorAll('.tab-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`page-${el.dataset.page}`).classList.add('active');
